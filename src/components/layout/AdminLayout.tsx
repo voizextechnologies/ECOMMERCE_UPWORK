@@ -1,0 +1,22 @@
+// src/components/layout/AdminLayout.tsx
+import React from 'react';
+import { AdminHeader } from './AdminHeader';
+import { AdminSidebar } from './AdminSidebar';
+
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+export function AdminLayout({ children }: AdminLayoutProps) {
+  return (
+    <div className="flex min-h-screen bg-brown-100">
+      <AdminSidebar />
+      <div className="flex-1 flex flex-col">
+        <AdminHeader />
+        <main className="flex-1 p-6 overflow-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
