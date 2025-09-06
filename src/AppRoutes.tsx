@@ -37,20 +37,26 @@ interface ProtectedRouteProps {
 function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
+  console.log('ProtectedRoute rendering. User:', user, 'Loading:', loading); // Log 9
+
   if (loading) {
+    console.log('ProtectedRoute: Still loading user session...'); // Log 10
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!user) {
+    console.log('ProtectedRoute: No user found, redirecting to /admin/login'); // Log 11
     // Not logged in, redirect to admin login page
     return <Navigate to="/admin/login" replace />;
   }
 
   if (adminOnly && user.role !== 'admin') {
+    console.log('ProtectedRoute: User is not admin, redirecting to /'); // Log 12
     // Logged in but not an admin, redirect to home or show access denied
     return <Navigate to="/" replace />;
   }
 
+  console.log('ProtectedRoute: User is authenticated and authorized. Rendering children.'); // Log 13
   return <>{children}</>;
 }
 
@@ -92,7 +98,7 @@ export function AppRoutes() {
                     <Route index element={<AdminDashboardPage />} />
                     {/* Placeholder for future admin routes */}
                     {/* <Route path="products" element={<AdminProductListPage />} /> */}
-                    {/* <Route path="categories" element={<AdminCategoryListPage />} /> */}
+                    {/* <Route path="categories" element={<AdminCategoryListPage />} */}
                     {/* <Route path="orders" element={<AdminOrderListPage />} /> */}
                     {/* <Route path="users" element={<AdminUserListPage />} /> */}
                     {/* <Route path="articles" element={<AdminDIYArticleListPage />} /> */}
