@@ -17,7 +17,7 @@ export function AdminSidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-brown-800 text-brown-100 flex flex-col p-4 shadow-lg">
+    <aside className="w-64 bg-brown-900 text-brown-100 flex flex-col p-4 shadow-lg"> {/* Changed bg-brown-800 to bg-brown-900 */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">BuildMart Admin</h1>
       </div>
@@ -33,8 +33,8 @@ export function AdminSidebar() {
                   to={item.path}
                   className={`flex items-center p-2 rounded-md transition-colors ${
                     isActive
-                      ? 'bg-brown-700 text-white' // Active state
-                      : 'hover:bg-brown-700' // Hover state
+                      ? 'bg-brown-700 text-white' // Active state: medium brown background, white text
+                      : 'hover:bg-brown-700' // Hover state: medium brown background
                   }`}
                 >
                   <Icon className="w-5 h-5 mr-3" />
