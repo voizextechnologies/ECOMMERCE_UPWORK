@@ -16,7 +16,7 @@ import { ShopPage } from './pages/ShopPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminLoginPage } from './pages/AdminLoginPage';
-import { useAuth } from './hooks/useSupabase';
+import { useApp } from './contexts/AppContext'; // Import useApp instead of useAuth
 
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
@@ -35,38 +35,36 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { state: { user, authLoading } } = useApp(); // Get user and authLoading from AppContext
 
-  console.log('ProtectedRoute rendering. User:', user, 'Loading:', loading); // Log 9
+  console.log('ProtectedRoute rendering. User:', user, 'AuthLoading:', authLoading); // Updated log
 
-  if (loading) {
-    console.log('ProtectedRoute: Still loading user session...'); // Log 10
+  if (authLoading) { // Use authLoading from context
+    console.log('ProtectedRoute: Still loading user session from AppContext...'); // Updated log
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!user) {
-    console.log('ProtectedRoute: No user found, redirecting to /admin/login'); // Log 11
-    // Not logged in, redirect to admin login page
+    console.log('ProtectedRoute: No user found, redirecting to /admin/login');
     return <Navigate to="/admin/login" replace />;
   }
 
   if (adminOnly && user.role !== 'admin') {
-    console.log('ProtectedRoute: User is not admin, redirecting to /'); // Log 12
-    // Logged in but not an admin, redirect to home or show access denied
+    console.log('ProtectedRoute: User is not admin, redirecting to /');
     return <Navigate to="/" replace />;
   }
 
-  console.log('ProtectedRoute: User is authenticated and authorized. Rendering children.'); // Log 13
+  console.log('ProtectedRoute: User is authenticated and authorized. Rendering children.');
   return <>{children}</>;
 }
 
 export function AppRoutes() {
-  const location = useLocation(); // Get current location
-  const isAdminRoute = location.pathname.startsWith('/admin'); // Check if it's an admin route
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <div className="min-h-screen bg-brown-300">
-      {!isAdminRoute && <Header />} {/* Conditionally render Header */}
+      {!isAdminRoute && <Header />}
       <main>
         <Routes>
           {/* Public Routes */}
@@ -110,7 +108,7 @@ export function AppRoutes() {
           />
         </Routes>
       </main>
-      {!isAdminRoute && <Footer />} {/* Conditionally render Footer */}
+      {!isAdminRoute && <Footer />}
       <MiniCart />
     </div>
   );
