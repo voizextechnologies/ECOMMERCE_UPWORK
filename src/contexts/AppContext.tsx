@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react'; // Add useEffect
 import { CartItem, Product, ProductVariant, User } from '../types';
+import { supabase } from '../lib/supabase'; // Import supabase client
 
 interface AppState {
   cart: CartItem[];
@@ -7,6 +8,7 @@ interface AppState {
   wishlist: string[];
   isCartOpen: boolean;
   isMenuOpen: boolean;
+  authLoading: boolean; // Add authLoading state
 }
 
 type AppAction =
@@ -20,7 +22,8 @@ type AppAction =
   | { type: 'CLOSE_MENU' }
   | { type: 'ADD_TO_WISHLIST'; payload: string }
   | { type: 'REMOVE_FROM_WISHLIST'; payload: string }
-  | { type: 'SET_USER'; payload: User | null }; // Ensure payload type is User | null
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_AUTH_LOADING'; payload: boolean }; // Add action for auth loading
 
 const initialState: AppState = {
   cart: [],
@@ -28,6 +31,7 @@ const initialState: AppState = {
   wishlist: [],
   isCartOpen: false,
   isMenuOpen: false,
+  authLoading: true, // Initialize authLoading to true
 };
 
 const AppContext = createContext<{
@@ -122,6 +126,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_USER':
       return { ...state, user: action.payload };
 
+    case 'SET_AUTH_LOADING': // Handle auth loading state
+      return { ...state, authLoading: action.payload };
+
     default:
       return state;
   }
@@ -129,6 +136,90 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+
+  // Auth logic moved from useAuth hook
+  useEffect(() => {
+    async function getUserSession() {
+      dispatch({ type: 'SET_AUTH_LOADING', payload: true });
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error('Error getting session:', sessionError);
+        dispatch({ type: 'SET_USER', payload: null });
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+        return;
+      }
+
+      if (session?.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('first_name, last_name, role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching user profile:', profileError);
+          dispatch({ type: 'SET_USER', payload: null });
+        } else {
+          dispatch({
+            type: 'SET_USER',
+            payload: {
+              id: session.user.id,
+              email: session.user.email || '',
+              firstName: profile?.first_name || '',
+              lastName: profile?.last_name || '',
+              role: profile?.role || 'customer',
+              addresses: [],
+              orders: [],
+              wishlist: [],
+            },
+          });
+        }
+      } else {
+        dispatch({ type: 'SET_USER', payload: null });
+      }
+      dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+    }
+
+    getUserSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        supabase
+          .from('user_profiles')
+          .select('first_name, last_name, role')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile, error: profileError }) => {
+            if (profileError) {
+              console.error('Error fetching user profile on auth change:', profileError);
+              dispatch({ type: 'SET_USER', payload: null });
+            } else {
+              dispatch({
+                type: 'SET_USER',
+                payload: {
+                  id: session.user.id,
+                  email: session.user.email || '',
+                  firstName: profile?.first_name || '',
+                  lastName: profile?.last_name || '',
+                  role: profile?.role || 'customer',
+                  addresses: [],
+                  orders: [],
+                  wishlist: [],
+                },
+              });
+            }
+          });
+      } else {
+        dispatch({ type: 'SET_USER', payload: null });
+      }
+      dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+    });
+
+    return () => subscription.unsubscribe();
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
