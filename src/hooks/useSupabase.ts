@@ -311,3 +311,121 @@ export function useCart(userId: string | null) {
     updateQuantity,
   };
 }
+
+// Admin-specific product CRUD operations
+export function useAdminProducts() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllProducts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (name),
+          departments (name)
+        `)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch products');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProductById = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (id, name),
+          departments (id, name)
+        `)
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch product');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addProduct = async (productData: Tables['products']['Insert']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert(productData)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add product');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProduct = async (id: string, productData: Tables['products']['Update']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update product');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete product');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    loading,
+    error,
+    fetchAllProducts,
+    fetchProductById,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+  };
+}
