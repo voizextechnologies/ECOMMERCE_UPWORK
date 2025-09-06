@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'; // Import useLocation
 import { AppProvider } from './contexts/AppContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -14,9 +14,9 @@ import { TrustBadges } from './components/home/TrustBadges';
 import { MiniCart } from './components/cart/MiniCart';
 import { ShopPage } from './pages/ShopPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
-import { AdminLayout } from './components/layout/AdminLayout'; // Import AdminLayout
-import { AdminLoginPage } from './pages/AdminLoginPage'; // Import AdminLoginPage
-import { useAuth } from './hooks/useSupabase'; // Import useAuth hook
+import { AdminLayout } from './components/layout/AdminLayout';
+import { AdminLoginPage } from './pages/AdminLoginPage';
+import { useAuth } from './hooks/useSupabase';
 
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
@@ -48,7 +48,7 @@ function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
 
   if (adminOnly && user.role !== 'admin') {
     // Logged in but not an admin, redirect to home or show access denied
-    return <Navigate to="/" replace />; // Or a specific access denied page
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -56,11 +56,14 @@ function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
 
 
 function App() {
+  const location = useLocation(); // Get current location
+  const isAdminRoute = location.pathname.startsWith('/admin'); // Check if it's an admin route
+
   return (
     <AppProvider>
       <BrowserRouter>
         <div className="min-h-screen bg-brown-300">
-          <Header />
+          {!isAdminRoute && <Header />} {/* Conditionally render Header */}
           <main>
             <Routes>
               {/* Public Routes */}
@@ -104,7 +107,7 @@ function App() {
               />
             </Routes>
           </main>
-          <Footer />
+          {!isAdminRoute && <Footer />} {/* Conditionally render Footer */}
           <MiniCart />
         </div>
       </BrowserRouter>
