@@ -21,7 +21,7 @@ import { useApp } from './contexts/AppContext'; // Import useApp instead of useA
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
   return (
-    <div className="p-6">
+    <div> {/* Removed p-6 as padding is now handled by AdminLayout's inner div */}
       <h2 className="text-3xl font-bold text-brown-900 mb-6">Admin Dashboard</h2>
       <p className="text-brown-700">Welcome to the admin panel. Use the sidebar to navigate.</p>
     </div>
