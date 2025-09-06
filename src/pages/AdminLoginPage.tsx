@@ -15,25 +15,33 @@ export function AdminLoginPage() {
     setLoading(true);
     setError(null);
 
+    console.log('Attempting to sign in with:', email); // Log 1
+
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (signInError) {
+      console.error('Sign-in error:', signInError.message); // Log 2
       setError(signInError.message);
       setLoading(false);
       return;
     }
 
+    console.log('Sign-in successful. Fetching user session...'); // Log 3
     // After successful login, check user role
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
+      console.error('Failed to retrieve user information after login:', userError); // Log 4
       setError('Failed to retrieve user information after login.');
       setLoading(false);
       return;
     }
+
+    console.log('User session retrieved. User ID:', user.id); // Log 5
+    console.log('Fetching user profile for role check...'); // Log 6
 
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
@@ -42,6 +50,7 @@ export function AdminLoginPage() {
       .single();
 
     if (profileError || profile?.role !== 'admin') {
+      console.error('Profile fetch error or not an admin:', profileError || 'User is not admin'); // Log 7
       // If not an admin, log them out and show error
       await supabase.auth.signOut();
       setError('Access Denied: You do not have administrator privileges.');
@@ -49,6 +58,7 @@ export function AdminLoginPage() {
       return;
     }
 
+    console.log('User is admin. Navigating to /admin'); // Log 8
     navigate('/admin'); // Redirect to admin dashboard
   };
 
