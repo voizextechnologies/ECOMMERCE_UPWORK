@@ -18,6 +18,11 @@ import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { useApp } from './contexts/AppContext'; // Import useApp instead of useAuth
 
+// Import new admin product pages
+import { AdminProductListPage } from './pages/AdminProductListPage';
+import { AdminAddProductPage } from './pages/AdminAddProductPage';
+import { AdminEditProductPage } from './pages/AdminEditProductPage';
+
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
   return (
@@ -94,8 +99,11 @@ export function AppRoutes() {
                 <AdminLayout>
                   <Routes>
                     <Route index element={<AdminDashboardPage />} />
+                    {/* Admin Product Routes */}
+                    <Route path="products" element={<AdminProductListPage />} />
+                    <Route path="products/new" element={<AdminAddProductPage />} />
+                    <Route path="products/:id/edit" element={<AdminEditProductPage />} />
                     {/* Placeholder for future admin routes */}
-                    {/* <Route path="products" element={<AdminProductListPage />} /> */}
                     {/* <Route path="categories" element={<AdminCategoryListPage />} */}
                     {/* <Route path="orders" element={<AdminOrderListPage />} /> */}
                     {/* <Route path="users" element={<AdminUserListPage />} /> */}
@@ -113,3 +121,4 @@ export function AppRoutes() {
     </div>
   );
 }
+
