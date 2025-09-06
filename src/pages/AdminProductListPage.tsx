@@ -1,0 +1,153 @@
+// src/pages/AdminProductListPage.tsx
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { useAdminProducts } from '../hooks/useSupabase';
+import { Product } from '../types'; // Assuming Product type is defined here
+import { Edit, Trash2, PlusCircle } from 'lucide-react';
+
+export function AdminProductListPage() {
+  const { loading, error, fetchAllProducts, deleteProduct } = useAdminProducts();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [refresh, setRefresh] = useState(false); // State to trigger re-fetch
+
+  useEffect(() => {
+    const getProducts = async () => {
+      const data = await fetchAllProducts();
+      if (data) {
+        // Map Supabase product data to your Product interface
+        const mappedProducts: Product[] = data.map(p => ({
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          description: p.description || '',
+          price: p.price,
+          originalPrice: p.original_price || undefined,
+          images: p.images || [],
+          category: (p.categories as { name: string } | null)?.name || 'N/A',
+          department: (p.departments as { name: string } | null)?.name || 'N/A',
+          brand: p.brand || '',
+          rating: p.rating || 0,
+          reviewCount: p.review_count || 0,
+          stock: p.stock || 0,
+          specifications: p.specifications || {},
+          // Add category_id and department_id for consistency with ProductForm
+          category_id: p.category_id || null,
+          department_id: p.department_id || null,
+        }));
+        setProducts(mappedProducts);
+      }
+    };
+    getProducts();
+  }, [refresh]); // Re-fetch when refresh state changes
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      const success = await deleteProduct(id);
+      if (success) {
+        setRefresh(prev => !prev); // Trigger re-fetch
+      } else {
+        alert('Failed to delete product.');
+      }
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading products...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-brown-900">Products</h2>
+        <Link to="/admin/products/new">
+          <Button>
+            <PlusCircle className="w-5 h-5 mr-2" />
+            Add New Product
+          </Button>
+        </Link>
+      </div>
+
+      {products.length === 0 ? (
+        <div className="text-center text-gray-600 py-10">No products found.</div>
+      ) : (
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Price
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Stock
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Department
+                </th>
+                <th scope="col" className="relative px-6 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <img className="h-10 w-10 rounded-full object-cover" src={product.images[0] || 'https://via.placeholder.com/40'} alt={product.name} />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                        <div className="text-sm text-gray-500">{product.slug}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                    {product.originalPrice && (
+                      <div className="text-sm text-gray-500 line-through">${product.originalPrice.toFixed(2)}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      product.stock > 10 ? 'bg-green-100 text-green-800' :
+                      product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {product.stock}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.category}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.department}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <Link to={`/admin/products/${product.id}/edit`} className="text-brown-600 hover:text-brown-900 mr-3">
+                      <Edit className="w-5 h-5 inline" />
+                    </Link>
+                    <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900">
+                      <Trash2 className="w-5 h-5 inline" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
