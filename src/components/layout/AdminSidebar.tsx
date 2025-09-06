@@ -1,9 +1,21 @@
 // src/components/layout/AdminSidebar.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import { LayoutDashboard, Package, List, Users, ShoppingBag, BookOpen, Settings } from 'lucide-react';
 
 export function AdminSidebar() {
+  const location = useLocation(); // Get current location for active link styling
+
+  const navItems = [
+    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/admin/products', icon: Package, label: 'Products' },
+    { path: '/admin/categories', icon: List, label: 'Categories & Depts.' },
+    { path: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
+    { path: '/admin/users', icon: Users, label: 'Users' },
+    { path: '/admin/articles', icon: BookOpen, label: 'DIY Articles' },
+    { path: '/admin/services', icon: Settings, label: 'Services' },
+  ];
+
   return (
     <aside className="w-64 bg-brown-800 text-brown-100 flex flex-col p-4 shadow-lg">
       <div className="mb-8">
@@ -11,69 +23,26 @@ export function AdminSidebar() {
       </div>
       <nav className="flex-1">
         <ul className="space-y-2">
-          <li>
-            <Link
-              to="/admin"
-              className="flex items-center p-2 rounded-md hover:bg-brown-700 transition-colors"
-            >
-              <LayoutDashboard className="w-5 h-5 mr-3" />
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/products"
-              className="flex items-center p-2 rounded-md hover:bg-brown-700 transition-colors"
-            >
-              <Package className="w-5 h-5 mr-3" />
-              Products
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/categories"
-              className="flex items-center p-2 rounded-md hover:bg-brown-700 transition-colors"
-            >
-              <List className="w-5 h-5 mr-3" />
-              Categories & Depts.
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/orders"
-              className="flex items-center p-2 rounded-md hover:bg-brown-700 transition-colors"
-            >
-              <ShoppingBag className="w-5 h-5 mr-3" />
-              Orders
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/users"
-              className="flex items-center p-2 rounded-md hover:bg-brown-700 transition-colors"
-            >
-              <Users className="w-5 h-5 mr-3" />
-              Users
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/articles"
-              className="flex items-center p-2 rounded-md hover:bg-brown-700 transition-colors"
-            >
-              <BookOpen className="w-5 h-5 mr-3" />
-              DIY Articles
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/admin/services"
-              className="flex items-center p-2 rounded-md hover:bg-brown-700 transition-colors"
-            >
-              <Settings className="w-5 h-5 mr-3" />
-              Services
-            </Link>
-          </li>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path || (item.path === '/admin' && location.pathname === '/admin/'); // Handle root admin path
+
+            return (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  className={`flex items-center p-2 rounded-md transition-colors ${
+                    isActive
+                      ? 'bg-brown-700 text-white' // Active state
+                      : 'hover:bg-brown-700' // Hover state
+                  }`}
+                >
+                  <Icon className="w-5 h-5 mr-3" />
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </aside>
