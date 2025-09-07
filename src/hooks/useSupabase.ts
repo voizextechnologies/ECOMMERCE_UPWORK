@@ -34,23 +34,23 @@ export function useProducts(options?: UseProductsOptions) {
           .select(
             `
             *,
-            categories (
+            category_id (
               id,
               name,
               slug
             ),
-            departments (
+            department_id (
               id,
               name,
               slug
             )
-          `,
+          `, // Changed categories to category_id and departments to department_id
             { count: 'exact' } // Request exact count for pagination
           );
 
         // Apply filters
         if (options?.categorySlug) {
-          query = query.eq('categories.slug', options.categorySlug);
+          query = query.eq('category_id.slug', options.categorySlug); // Updated filter to use category_id.slug
         }
         if (options?.brand) {
           query = query.ilike('brand', `%${options.brand}%`);
@@ -156,12 +156,12 @@ export function useProduct(slug: string) {
           .select(
             `
             *,
-            categories (
+            category_id (
               id,
               name,
               slug
             ),
-            departments (
+            department_id (
               id,
               name,
               slug
@@ -173,7 +173,7 @@ export function useProduct(slug: string) {
               stock,
               attributes
             )
-          `
+          ` // Changed categories to category_id and departments to department_id
           )
           .eq('slug', slug)
           .single();
@@ -325,9 +325,9 @@ export function useAdminProducts() {
         .from('products')
         .select(`
           *,
-          categories (name),
-          departments (name)
-        `)
+          category_id (name),
+          department_id (name)
+        `) // Changed categories to category_id and departments to department_id
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -347,9 +347,9 @@ export function useAdminProducts() {
         .from('products')
         .select(`
           *,
-          categories (id, name),
-          departments (id, name)
-        `)
+          category_id (id, name),
+          department_id (id, name)
+        `) // Changed categories to category_id and departments to department_id
         .eq('id', id)
         .single();
       if (error) throw error;
