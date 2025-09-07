@@ -305,12 +305,19 @@ export function useCart(userId: string | null) {
   };
 }
 
+// src/hooks/useSupabase.ts
+import { useEffect, useState, useCallback } from 'react'; // Import useCallback
+import { supabase } from '../lib/supabase';
+import type { Database } from '../lib/supabase';
+
+// ... (other hooks like useProducts, useDepartments, useProduct, useCart remain unchanged)
+
 // Admin-specific product CRUD operations
 export function useAdminProducts() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAllProducts = async () => {
+  const fetchAllProducts = useCallback(async () => { // Wrap in useCallback
     setLoading(true);
     setError(null);
     try {
@@ -330,9 +337,9 @@ export function useAdminProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array means this function is created once
 
-  const fetchProductById = async (id: string) => {
+  const fetchProductById = useCallback(async (id: string) => { // Wrap in useCallback
     setLoading(true);
     setError(null);
     try {
@@ -353,9 +360,9 @@ export function useAdminProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array
 
-  const addProduct = async (productData: Tables['products']['Insert']) => {
+  const addProduct = useCallback(async (productData: Tables['products']['Insert']) => { // Wrap in useCallback
     setLoading(true);
     setError(null);
     try {
@@ -372,9 +379,9 @@ export function useAdminProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array
 
-  const updateProduct = async (id: string, productData: Tables['products']['Update']) => {
+  const updateProduct = useCallback(async (id: string, productData: Tables['products']['Update']) => { // Wrap in useCallback
     setLoading(true);
     setError(null);
     try {
@@ -392,9 +399,9 @@ export function useAdminProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array
 
-  const deleteProduct = async (id: string) => {
+  const deleteProduct = useCallback(async (id: string) => { // Wrap in useCallback
     setLoading(true);
     setError(null);
     try {
@@ -410,7 +417,7 @@ export function useAdminProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // Empty dependency array
 
   return {
     loading,
