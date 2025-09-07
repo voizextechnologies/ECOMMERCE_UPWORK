@@ -18,7 +18,9 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
   const [slug, setSlug] = useState(initialData?.slug || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [price, setPrice] = useState(initialData?.price || 0);
-  const [originalPrice, setOriginalPrice] = useState(initialData?.originalPrice || undefined);
+  // MODIFICATION START: Initialize originalPrice to null instead of undefined
+  const [originalPrice, setOriginalPrice] = useState<number | null>(initialData?.originalPrice ?? null);
+  // MODIFICATION END
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [categoryId, setCategoryId] = useState(initialData?.category_id || '');
   const [departmentId, setDepartmentId] = useState(initialData?.department_id || '');
@@ -34,7 +36,9 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       setSlug(initialData.slug);
       setDescription(initialData.description);
       setPrice(initialData.price);
-      setOriginalPrice(initialData.originalPrice || undefined);
+      // MODIFICATION START: Ensure originalPrice is null if undefined
+      setOriginalPrice(initialData.originalPrice ?? null);
+      // MODIFICATION END
       setImages(initialData.images || []);
       setCategoryId(initialData.category_id || '');
       setDepartmentId(initialData.department_id || '');
@@ -59,7 +63,7 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       slug,
       description,
       price,
-      originalPrice: originalPrice || null,
+      originalPrice: originalPrice, // No need for || null here, as state is already number | null
       images,
       category_id: categoryId || null,
       department_id: departmentId || null,
@@ -82,6 +86,18 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
   const removeImageField = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
   };
+
+  // MODIFICATION START: New handler for originalPrice input
+  const handleOriginalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setOriginalPrice(null); // Set to null if input is empty
+    } else {
+      const parsedValue = parseFloat(value);
+      setOriginalPrice(isNaN(parsedValue) ? null : parsedValue); // Set to null if not a valid number
+    }
+  };
+  // MODIFICATION END
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -140,8 +156,10 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
           <input
             type="number"
             id="originalPrice"
-            value={originalPrice}
-            onChange={(e) => setOriginalPrice(parseFloat(e.target.value))}
+            // MODIFICATION START: Ensure value is never undefined for the input
+            value={originalPrice ?? ''}
+            onChange={handleOriginalPriceChange} // Use the new handler
+            // MODIFICATION END
             step="0.01"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
           />
