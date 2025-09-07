@@ -1,22 +1,27 @@
 // src/pages/AdminAddProductPage.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductForm } from '../components/admin/ProductForm';
 import { useAdminProducts } from '../hooks/useSupabase';
-import { Product } from '../types'; // Assuming Product type is defined here
+import { Product } from '../types';
 
 export function AdminAddProductPage() {
   const navigate = useNavigate();
   const { addProduct, loading, error } = useAdminProducts();
 
-  const handleSubmit = async (productData: Omit<Product, 'id' | 'created_at' | 'reviewCount' | 'rating'>) => {
+  const handleSubmit = async (productData: Omit<Product, 'id' | 'reviewCount' | 'rating'>) => {
     const newProduct = {
-      ...productData,
-      // Ensure images is an array of strings, even if empty
+      slug: productData.slug,
+      name: productData.name,
+      description: productData.description || '',
+      price: productData.price,
+      original_price: productData.originalPrice || null,
       images: productData.images || [],
-      // Ensure specifications is a JSONB object, even if empty
+      category_id: productData.category_id || null,
+      department_id: productData.department_id || null,
+      brand: productData.brand || '',
+      stock: productData.stock || 0,
       specifications: productData.specifications || {},
-      // Default values for new products
       rating: 0,
       review_count: 0,
     };
@@ -24,13 +29,11 @@ export function AdminAddProductPage() {
     const result = await addProduct(newProduct);
     if (result) {
       navigate('/admin/products');
-    } else {
-      // Error message will be displayed by ProductForm
     }
   };
 
   return (
-    <div className="p-6">
+    <div>
       <h2 className="text-2xl font-bold text-brown-900 mb-6">Add New Product</h2>
       <ProductForm onSubmit={handleSubmit} loading={loading} error={error} />
     </div>

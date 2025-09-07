@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/supabase';
-import { User } from '../types'; // Import the User interface
 
 type Tables = Database['public']['Tables'];
 
@@ -34,23 +33,23 @@ export function useProducts(options?: UseProductsOptions) {
           .select(
             `
             *,
-            category_id (
+            categories!category_id (
               id,
               name,
               slug
             ),
-            department_id (
+            departments!department_id (
               id,
               name,
               slug
             )
-          `, // Changed categories to category_id and departments to department_id
-            { count: 'exact' } // Request exact count for pagination
+          `,
+            { count: 'exact' }
           );
 
         // Apply filters
         if (options?.categorySlug) {
-          query = query.eq('category_id.slug', options.categorySlug); // Updated filter to use category_id.slug
+          query = query.eq('categories.slug', options.categorySlug);
         }
         if (options?.brand) {
           query = query.ilike('brand', `%${options.brand}%`);
@@ -156,12 +155,12 @@ export function useProduct(slug: string) {
           .select(
             `
             *,
-            category_id (
+            categories!category_id (
               id,
               name,
               slug
             ),
-            department_id (
+            departments!department_id (
               id,
               name,
               slug
@@ -173,7 +172,7 @@ export function useProduct(slug: string) {
               stock,
               attributes
             )
-          ` // Changed categories to category_id and departments to department_id
+          `
           )
           .eq('slug', slug)
           .single();
@@ -325,9 +324,9 @@ export function useAdminProducts() {
         .from('products')
         .select(`
           *,
-          category_id (name),
-          department_id (name)
-        `) // Changed categories to category_id and departments to department_id
+          categories!category_id (name),
+          departments!department_id (name)
+        `)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -347,9 +346,9 @@ export function useAdminProducts() {
         .from('products')
         .select(`
           *,
-          category_id (id, name),
-          department_id (id, name)
-        `) // Changed categories to category_id and departments to department_id
+          categories!category_id (id, name),
+          departments!department_id (id, name)
+        `)
         .eq('id', id)
         .single();
       if (error) throw error;

@@ -3,10 +3,30 @@ import { ShopSearchBar } from '../../components/shop/ShopSearchBar';
 import { ShopFilters } from '../../components/shop/ShopFilters';
 import { ProductListing } from '../../components/shop/ProductListing';
 import { ShopPagination } from '../../components/shop/ShopPagination';
+import { useProducts } from '../../hooks/useSupabase';
+import { useSearchParams } from 'react-router-dom';
 
 export function ShopPage() {
-  // Define itemsPerPage here or pass it as a prop if it needs to be dynamic
-  const itemsPerPage = 9; // Example: 9 products per page
+  const [searchParams] = useSearchParams();
+  const itemsPerPage = 9;
+  
+  const categorySlug = searchParams.get('category') || undefined;
+  const searchQuery = searchParams.get('search') || undefined;
+  const minPrice = Number(searchParams.get('minPrice')) || undefined;
+  const maxPrice = Number(searchParams.get('maxPrice')) || undefined;
+  const brands = searchParams.getAll('brand');
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const offset = (currentPage - 1) * itemsPerPage;
+
+  const { totalCount } = useProducts({
+    categorySlug,
+    searchQuery,
+    minPrice,
+    maxPrice,
+    brand: brands.length > 0 ? brands[0] : undefined,
+    limit: itemsPerPage,
+    offset,
+  });
 
   return (
     <div className="min-h-screen bg-brown-100">
@@ -19,7 +39,7 @@ export function ShopPage() {
           <section className="lg:col-span-3">
             <ShopSearchBar />
             <ProductListing itemsPerPage={itemsPerPage} />
-            <ShopPagination totalCount={/* This will be passed from ProductListing or a parent component */ 0} itemsPerPage={itemsPerPage} />
+            <ShopPagination totalCount={totalCount} itemsPerPage={itemsPerPage} />
           </section>
         </div>
       </main>

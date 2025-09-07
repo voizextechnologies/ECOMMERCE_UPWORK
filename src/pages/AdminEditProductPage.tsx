@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProductForm } from '../components/admin/ProductForm';
 import { useAdminProducts } from '../hooks/useSupabase';
-import { Product } from '../types'; // Assuming Product type is defined here
+import { Product } from '../types';
 
 export function AdminEditProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +17,6 @@ export function AdminEditProductPage() {
       if (id) {
         const data = await fetchProductById(id);
         if (data) {
-          // Map Supabase product data to your Product interface
           const mappedProduct: Product = {
             id: data.id,
             slug: data.slug,
@@ -26,8 +25,8 @@ export function AdminEditProductPage() {
             price: data.price,
             originalPrice: data.original_price || undefined,
             images: data.images || [],
-            category: (data.categories as { name: string } | null)?.name || 'N/A',
-            department: (data.departments as { name: string } | null)?.name || 'N/A',
+            category: (data.category_id as any)?.name || 'N/A',
+            department: (data.department_id as any)?.name || 'N/A',
             brand: data.brand || '',
             rating: data.rating || 0,
             reviewCount: data.review_count || 0,
@@ -43,22 +42,28 @@ export function AdminEditProductPage() {
       }
     };
     getProduct();
-  }, [id]);
+  }, [id, fetchProductById]);
 
-  const handleSubmit = async (productData: Omit<Product, 'id' | 'created_at' | 'reviewCount' | 'rating'>) => {
+  const handleSubmit = async (productData: Omit<Product, 'id' | 'reviewCount' | 'rating'>) => {
     if (!id) return;
 
     const updatedProduct = {
-      ...productData,
+      slug: productData.slug,
+      name: productData.name,
+      description: productData.description || '',
+      price: productData.price,
+      original_price: productData.originalPrice || null,
       images: productData.images || [],
+      category_id: productData.category_id || null,
+      department_id: productData.department_id || null,
+      brand: productData.brand || '',
+      stock: productData.stock || 0,
       specifications: productData.specifications || {},
     };
 
     const result = await updateProduct(id, updatedProduct);
     if (result) {
       navigate('/admin/products');
-    } else {
-      // Error message will be displayed by ProductForm
     }
   };
 
@@ -75,7 +80,7 @@ export function AdminEditProductPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
       <h2 className="text-2xl font-bold text-brown-900 mb-6">Edit Product</h2>
       {initialData && (
         <ProductForm initialData={initialData} onSubmit={handleSubmit} loading={loading} error={error} />

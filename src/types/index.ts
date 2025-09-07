@@ -15,8 +15,8 @@ export interface Product {
   stock: number;
   specifications: Record<string, string>;
   variants?: ProductVariant[];
-  category_id?: string | null; // Add this line
-  department_id?: string | null; // Add this line
+  category_id?: string | null;
+  department_id?: string | null;
 }
 
 export interface ProductVariant {
@@ -59,7 +59,7 @@ export interface User {
   addresses: Address[];
   orders: Order[];
   wishlist: string[];
-  role?: string; // Add this line
+  role?: string;
 }
 
 export interface Address {

@@ -3,19 +3,18 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAdminProducts } from '../hooks/useSupabase';
-import { Product } from '../types'; // Assuming Product type is defined here
+import { Product } from '../types';
 import { Edit, Trash2, PlusCircle } from 'lucide-react';
 
 export function AdminProductListPage() {
   const { loading, error, fetchAllProducts, deleteProduct } = useAdminProducts();
   const [products, setProducts] = useState<Product[]>([]);
-  const [refresh, setRefresh] = useState(false); // State to trigger re-fetch
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     const getProducts = async () => {
       const data = await fetchAllProducts();
       if (data) {
-        // Map Supabase product data to your Product interface
         const mappedProducts: Product[] = data.map(p => ({
           id: p.id,
           slug: p.slug,
@@ -24,14 +23,13 @@ export function AdminProductListPage() {
           price: p.price,
           originalPrice: p.original_price || undefined,
           images: p.images || [],
-          category: (p.categories as { name: string } | null)?.name || 'N/A',
-          department: (p.departments as { name: string } | null)?.name || 'N/A',
+          category: (p.categories as any)?.name || 'N/A',
+          department: (p.departments as any)?.name || 'N/A',
           brand: p.brand || '',
           rating: p.rating || 0,
           reviewCount: p.review_count || 0,
           stock: p.stock || 0,
           specifications: p.specifications || {},
-          // Add category_id and department_id for consistency with ProductForm
           category_id: p.category_id || null,
           department_id: p.department_id || null,
         }));
@@ -39,13 +37,13 @@ export function AdminProductListPage() {
       }
     };
     getProducts();
-  }, [refresh]); // Re-fetch when refresh state changes
+  }, [refresh, fetchAllProducts]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       const success = await deleteProduct(id);
       if (success) {
-        setRefresh(prev => !prev); // Trigger re-fetch
+        setRefresh(prev => !prev);
       } else {
         alert('Failed to delete product.');
       }
@@ -61,7 +59,7 @@ export function AdminProductListPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-brown-900">Products</h2>
         <Link to="/admin/products/new">

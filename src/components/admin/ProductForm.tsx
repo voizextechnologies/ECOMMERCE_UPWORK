@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { useDepartments } from '../../hooks/useSupabase';
-import { Product } from '../../types'; // Assuming Product type is defined here
+import { Product } from '../../types';
 
 interface ProductFormProps {
   initialData?: Product;
-  onSubmit: (data: Omit<Product, 'id' | 'created_at' | 'reviewCount' | 'rating'>) => void;
+  onSubmit: (data: Omit<Product, 'id' | 'reviewCount' | 'rating'>) => void;
   loading: boolean;
   error: string | null;
 }
@@ -18,9 +18,7 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
   const [slug, setSlug] = useState(initialData?.slug || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [price, setPrice] = useState(initialData?.price || 0);
-  // MODIFICATION START: Initialize originalPrice to null instead of undefined
   const [originalPrice, setOriginalPrice] = useState<number | null>(initialData?.originalPrice ?? null);
-  // MODIFICATION END
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [categoryId, setCategoryId] = useState(initialData?.category_id || '');
   const [departmentId, setDepartmentId] = useState(initialData?.department_id || '');
@@ -36,9 +34,7 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       setSlug(initialData.slug);
       setDescription(initialData.description);
       setPrice(initialData.price);
-      // MODIFICATION START: Ensure originalPrice is null if undefined
       setOriginalPrice(initialData.originalPrice ?? null);
-      // MODIFICATION END
       setImages(initialData.images || []);
       setCategoryId(initialData.category_id || '');
       setDepartmentId(initialData.department_id || '');
@@ -58,13 +54,29 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       return;
     }
 
+    console.log('Submitting product data:', {
+      name,
+      slug,
+      description,
+      price,
+      originalPrice: originalPrice,
+      images,
+      category_id: categoryId || null,
+      department_id: departmentId || null,
+      brand,
+      stock,
+      specifications: parsedSpecs,
+    });
+
     onSubmit({
       name,
       slug,
       description,
       price,
-      originalPrice: originalPrice, // No need for || null here, as state is already number | null
+      originalPrice: originalPrice,
       images,
+      category: '', // Will be populated by backend
+      department: '', // Will be populated by backend
       category_id: categoryId || null,
       department_id: departmentId || null,
       brand,
@@ -87,17 +99,15 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
     setImages(images.filter((_, i) => i !== index));
   };
 
-  // MODIFICATION START: New handler for originalPrice input
   const handleOriginalPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value === '') {
-      setOriginalPrice(null); // Set to null if input is empty
+      setOriginalPrice(null);
     } else {
       const parsedValue = parseFloat(value);
-      setOriginalPrice(isNaN(parsedValue) ? null : parsedValue); // Set to null if not a valid number
+      setOriginalPrice(isNaN(parsedValue) ? null : parsedValue);
     }
   };
-  // MODIFICATION END
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -145,7 +155,7 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
             type="number"
             id="price"
             value={price}
-            onChange={(e) => setPrice(parseFloat(e.target.value))}
+            onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
             step="0.01"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
             required
@@ -156,10 +166,8 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
           <input
             type="number"
             id="originalPrice"
-            // MODIFICATION START: Ensure value is never undefined for the input
             value={originalPrice ?? ''}
-            onChange={handleOriginalPriceChange} // Use the new handler
-            // MODIFICATION END
+            onChange={handleOriginalPriceChange}
             step="0.01"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
           />
@@ -191,7 +199,7 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
             value={departmentId}
             onChange={(e) => {
               setDepartmentId(e.target.value);
-              setCategoryId(''); // Reset category when department changes
+              setCategoryId('');
             }}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
           >
@@ -217,7 +225,7 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
             disabled={!departmentId}
           >
             <option value="">Select Category</option>
-            {departmentId && departments.find(d => d.id === departmentId)?.categories.map((cat) => (
+            {departmentId && departments.find(d => d.id === departmentId)?.categories?.map((cat) => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
@@ -241,7 +249,7 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
             type="number"
             id="stock"
             value={stock}
-            onChange={(e) => setStock(parseInt(e.target.value))}
+            onChange={(e) => setStock(parseInt(e.target.value) || 0)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
             required
           />
