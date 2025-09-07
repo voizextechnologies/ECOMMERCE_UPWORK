@@ -13,6 +13,7 @@ export function AdminProductListPage() {
 
   useEffect(() => {
     const getProducts = async () => {
+      console.log('AdminProductListPage: useEffect triggered. Loading:', loading, 'Error:', error);
       const data = await fetchAllProducts();
       if (data) {
         const mappedProducts: Product[] = data.map(p => ({
@@ -34,18 +35,24 @@ export function AdminProductListPage() {
           department_id: p.department_id || null,
         }));
         setProducts(mappedProducts);
+        console.log('AdminProductListPage: Products set:', mappedProducts.length);
+      } else {
+        console.log('AdminProductListPage: No data returned from fetchAllProducts.');
       }
     };
     getProducts();
-  }, [refresh, fetchAllProducts]);
+  }, [refresh, fetchAllProducts]); // fetchAllProducts is now memoized with useCallback
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
+      console.log(`AdminProductListPage: Attempting to delete product ID: ${id}`);
       const success = await deleteProduct(id);
       if (success) {
         setRefresh(prev => !prev);
+        console.log(`AdminProductListPage: Product ${id} deleted, refreshing list.`);
       } else {
         alert('Failed to delete product.');
+        console.error(`AdminProductListPage: Failed to delete product ID: ${id}`);
       }
     }
   };
@@ -55,7 +62,8 @@ export function AdminProductListPage() {
   }
 
   if (error) {
-    return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+    // Robust error display: ensure error is always rendered as a string
+    return <div className="text-center py-8 text-red-500">Error: {typeof error === 'string' ? error : JSON.stringify(error)}</div>;
   }
 
   return (
