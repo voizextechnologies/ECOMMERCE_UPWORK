@@ -1,3 +1,4 @@
+// src/types/index.ts
 export interface Product {
   id: string;
   slug: string;
@@ -14,6 +15,8 @@ export interface Product {
   stock: number;
   specifications: Record<string, string>;
   variants?: ProductVariant[];
+  category_id?: string | null; // Add this line
+  department_id?: string | null; // Add this line
 }
 
 export interface ProductVariant {
@@ -56,6 +59,7 @@ export interface User {
   addresses: Address[];
   orders: Order[];
   wishlist: string[];
+  role?: string; // Add this line
 }
 
 export interface Address {
@@ -107,15 +111,4 @@ export interface DIYArticle {
   publishedAt: string;
   category: string;
   tags: string[];
-}
-
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  addresses: Address[];
-  orders: Order[];
-  wishlist: string[];
-  role?: string; // Add this line
 }
