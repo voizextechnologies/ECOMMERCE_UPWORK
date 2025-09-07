@@ -5,7 +5,7 @@ import { useProducts } from '../../hooks/useSupabase'; // Import useProducts hoo
 
 export function TrendingProducts() {
   const { dispatch } = useApp();
-  const { products, loading, error } = useProducts(); // Fetch products from Supabase
+  const { products, loading, error } = useProducts({ limit: 4 }); // Limit to 4 products and add stable options
 
   const addToCart = (product: any) => {
     dispatch({
@@ -18,7 +18,14 @@ export function TrendingProducts() {
     return (
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4 text-center text-brown-600">
-          Loading trending products...
+          <div className="animate-pulse">
+            <div className="h-8 bg-brown-200 rounded w-64 mx-auto mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-brown-100 h-64 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     );
@@ -34,8 +41,8 @@ export function TrendingProducts() {
     );
   }
 
-  // Filter products to simulate "trending products under $100"
-  const trendingProducts = products.filter(product => product.price < 100).slice(0, 4);
+  // Filter products to simulate "trending products under $100" - but limit is already applied
+  const trendingProducts = products.filter(product => product.price < 100);
 
   return (
     <section className="py-12 bg-white">

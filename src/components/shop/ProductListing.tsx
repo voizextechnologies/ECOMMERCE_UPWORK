@@ -22,15 +22,17 @@ export function ProductListing({ itemsPerPage }: ProductListingProps) {
   const currentPage = Number(searchParams.get('page')) || 1;
   const offset = (currentPage - 1) * itemsPerPage;
 
-  const { products, loading, error } = useProducts({
+  // Create stable options object to prevent unnecessary re-renders
+  const productOptions = React.useMemo(() => ({
     categorySlug: categorySlug,
     searchQuery: searchQuery,
     minPrice: minPrice,
     maxPrice: maxPrice,
-    brand: brands.length > 0 ? brands[0] : undefined, // Simplified for single brand filter for now
+    brand: brands.length > 0 ? brands[0] : undefined,
     limit: itemsPerPage,
     offset: offset,
-  });
+  }), [categorySlug, searchQuery, minPrice, maxPrice, brands, itemsPerPage, offset]);
+  const { products, loading, error } = useProducts(productOptions);
 
   const addToCart = (product: Product) => {
     dispatch({
@@ -41,8 +43,12 @@ export function ProductListing({ itemsPerPage }: ProductListingProps) {
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-brown-600">
-        Loading products...
+      <div className="animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {[...Array(itemsPerPage)].map((_, i) => (
+            <div key={i} className="bg-brown-100 h-96 rounded-lg"></div>
+          ))}
+        </div>
       </div>
     );
   }

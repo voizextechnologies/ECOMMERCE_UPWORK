@@ -22,6 +22,8 @@ export function useProducts(options?: UseProductsOptions) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Create a stable key for the options to prevent unnecessary re-renders
+  const optionsKey = JSON.stringify(options || {});
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
@@ -87,15 +89,7 @@ export function useProducts(options?: UseProductsOptions) {
     }
 
     fetchProducts();
-  }, [
-    options?.categorySlug,
-    options?.searchQuery,
-    options?.minPrice,
-    options?.maxPrice,
-    options?.brand,
-    options?.limit,
-    options?.offset,
-  ]);
+  }, [optionsKey]); // Use stable key instead of individual options
 
   return { products, totalCount, loading, error };
 }

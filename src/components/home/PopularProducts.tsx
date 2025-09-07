@@ -6,7 +6,7 @@ import { useProducts } from '../../hooks/useSupabase'; // Import useProducts hoo
 
 export function PopularProducts() {
   const { dispatch } = useApp();
-  const { products, loading, error } = useProducts(); // Fetch products from Supabase
+  const { products, loading, error } = useProducts({ limit: 6 }); // Limit to 6 products and add stable options
 
   const addToCart = (product: any) => {
     dispatch({
@@ -19,7 +19,14 @@ export function PopularProducts() {
     return (
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center text-brown-600">
-          Loading popular products...
+          <div className="animate-pulse">
+            <div className="h-8 bg-brown-200 rounded w-64 mx-auto mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-brown-100 h-64 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     );

@@ -19,7 +19,7 @@ export function ShopFilters() {
   // Fetch products to get unique brands for the brand filter
   // This is a simplified approach; for a large number of products,
   // you might want a dedicated Supabase function to get unique brands.
-  const { products: allProducts, loading: productsLoading, error: productsError } = useProducts();
+  const { products: allProducts, loading: productsLoading, error: productsError } = useProducts({ limit: 1000 }); // Get more products for brand filtering
   const uniqueBrands = Array.from(new Set(allProducts.map(p => p.brand))).filter(Boolean) as string[];
 
   useEffect(() => {
