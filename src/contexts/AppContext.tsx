@@ -1,109 +1,45 @@
-import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react'; // Add useEffect
+import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { CartItem, Product, ProductVariant, User } from '../types';
-import { supabase } from '../lib/supabase'; // Import supabase client
+import { supabase } from '../lib/supabase';
+import { useCart } from '../hooks/useSupabase'; // Import useCart
 
 interface AppState {
-  cart: CartItem[];
   user: User | null;
   wishlist: string[];
   isCartOpen: boolean;
   isMenuOpen: boolean;
-  authLoading: boolean; // Add authLoading state
+  authLoading: boolean;
 }
 
+// Removed cart-related actions from AppAction
 type AppAction =
-  | { type: 'ADD_TO_CART'; payload: { product: Product; quantity: number; variant?: ProductVariant } }
-  | { type: 'REMOVE_FROM_CART'; payload: { productId: string; variantId?: string } }
-  | { type: 'UPDATE_CART_QUANTITY'; payload: { productId: string; variantId?: string; quantity: number } }
-  | { type: 'CLEAR_CART' }
-  | { type: 'TOGGLE_CART' }
-  | { type: 'CLOSE_CART' }
+  | { type: 'TOGGLE_CART' } // Keep these for UI state
+  | { type: 'CLOSE_CART' } // Keep these for UI state
   | { type: 'TOGGLE_MENU' }
   | { type: 'CLOSE_MENU' }
   | { type: 'ADD_TO_WISHLIST'; payload: string }
   | { type: 'REMOVE_FROM_WISHLIST'; payload: string }
   | { type: 'SET_USER'; payload: User | null }
-  | { type: 'SET_AUTH_LOADING'; payload: boolean }; // Add action for auth loading
+  | { type: 'SET_AUTH_LOADING'; payload: boolean };
 
-const initialState: AppState = {
-  cart: [],
-  user: null,
-  wishlist: [],
-  isCartOpen: false,
-  isMenuOpen: false,
-  authLoading: true, // Initialize authLoading to true
-};
-
+// Update AppContext value type to include useCart's return values
 const AppContext = createContext<{
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
+  cartItems: CartItem[];
+  addToCart: (productId: string, quantity?: number, variantId?: string) => Promise<void>;
+  removeFromCart: (cartItemId: string) => Promise<void>;
+  updateQuantity: (cartItemId: string, quantity: number) => Promise<void>;
+  cartLoading: boolean;
+  cartError: string | null;
+  toggleCart: () => void;
+  closeCart: () => void;
 } | null>(null);
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'ADD_TO_CART': {
-      console.log('AppContext Reducer: Handling ADD_TO_CART action. Payload:', action.payload);
-      const { product, quantity, variant } = action.payload;
-      const existingItemIndex = state.cart.findIndex(
-        item => item.product.id === product.id &&
-        (variant ? item.variant?.id === variant.id : !item.variant)
-      );
-
-      let newState;
-      if (existingItemIndex > -1) {
-        const updatedCart = [...state.cart]; // Creates a new array
-        // IMPORTANT: Create a new object for the updated item to ensure immutability
-        updatedCart[existingItemIndex] = {
-          ...updatedCart[existingItemIndex],
-          quantity: updatedCart[existingItemIndex].quantity + quantity
-        };
-        newState = { ...state, cart: updatedCart };
-      } else {
-        newState = {
-          ...state,
-          cart: [...state.cart, { product, quantity, variant }]
-        };
-      }
-      console.log('AppContext Reducer: New cart state:', newState.cart);
-      return newState;
-    }
-
-    case 'REMOVE_FROM_CART': {
-      const { productId, variantId } = action.payload;
-      return {
-        ...state,
-        cart: state.cart.filter(
-          item => !(item.product.id === productId &&
-          (variantId ? item.variant?.id === variantId : !item.variant))
-        )
-      };
-    }
-
-    case 'UPDATE_CART_QUANTITY': {
-      const { productId, variantId, quantity } = action.payload;
-      if (quantity <= 0) {
-        return {
-          ...state,
-          cart: state.cart.filter(
-            item => !(item.product.id === productId &&
-            (variantId ? item.variant?.id === variantId : !item.variant))
-          )
-        };
-      }
-
-      return {
-        ...state,
-        cart: state.cart.map(item =>
-          item.product.id === productId &&
-          (variantId ? item.variant?.id === variantId : !item.variant)
-            ? { ...item, quantity }
-            : item
-        )
-      };
-    }
-
-    case 'CLEAR_CART':
-      return { ...state, cart: [] };
+    // Removed ADD_TO_CART, REMOVE_FROM_CART, UPDATE_CART_QUANTITY, CLEAR_CART
+    // These actions will now be handled directly by the useCart hook's functions
 
     case 'TOGGLE_CART':
       return { ...state, isCartOpen: !state.isCartOpen };
@@ -134,7 +70,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_USER':
       return { ...state, user: action.payload };
 
-    case 'SET_AUTH_LOADING': // Handle auth loading state
+    case 'SET_AUTH_LOADING':
       return { ...state, authLoading: action.payload };
 
     default:
@@ -144,6 +80,14 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const {
+    cartItems,
+    loading: cartLoading,
+    error: cartError,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+  } = useCart(state.user?.id || null); // Use the useCart hook
 
   // Auth logic moved from useAuth hook
   useEffect(() => {
@@ -227,10 +171,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
+
+  // Provide cart-related functions and state directly
+  const contextValue = React.useMemo(() => ({
+    state,
+    dispatch,
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    cartLoading,
+    cartError,
+    toggleCart: () => dispatch({ type: 'TOGGLE_CART' }),
+    closeCart: () => dispatch({ type: 'CLOSE_CART' }),
+  }), [state, dispatch, cartItems, addToCart, removeFromCart, updateQuantity, cartLoading, cartError]);
+
 
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );
