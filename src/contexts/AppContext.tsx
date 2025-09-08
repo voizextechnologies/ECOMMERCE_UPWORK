@@ -3,6 +3,14 @@ import { CartItem, Product, ProductVariant, User } from '../types';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../hooks/useSupabase'; // Import useCart
 
+interface AppState {
+  user: User | null;
+  wishlist: string[];
+  isCartOpen: boolean;
+  isMenuOpen: boolean;
+  authLoading: boolean;
+}
+
 const initialState: AppState = {
   user: null,
   wishlist: [],
@@ -42,7 +50,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
     // These actions will now be handled directly by the useCart hook's functions
 
     case 'TOGGLE_CART':
-      return { ...state, isCartOpen: !state.isCartOpen };
+      console.log('appReducer: TOGGLE_CART - Before:', state.isCartOpen);
+      const newCartState = { ...state, isCartOpen: !state.isCartOpen };
+      console.log('appReducer: TOGGLE_CART - After:', newCartState.isCartOpen);
+      return newCartState;
 
     case 'CLOSE_CART':
       return { ...state, isCartOpen: false };
@@ -183,7 +194,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateQuantity,
     cartLoading,
     cartError,
-    toggleCart: () => dispatch({ type: 'TOGGLE_CART' }),
+    toggleCart: () => {
+      console.log('Header Button: toggleCart function called');
+      dispatch({ type: 'TOGGLE_CART' });
+    },
     closeCart: () => dispatch({ type: 'CLOSE_CART' }),
   }), [state, dispatch, cartItems, addToCart, removeFromCart, updateQuantity, cartLoading, cartError]);
 
