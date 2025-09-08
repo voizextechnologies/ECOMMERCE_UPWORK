@@ -28,10 +28,11 @@ export function ProductDetailPage() {
     );
   }
 
-  const handleAddToCart = () => {
+   const handleAddToCart = () => {
+    console.log('handleAddToCart called'); // Add this line
     const productToAdd = {
       ...product,
-      variants: product.product_variants // Map Supabase product_variants to ProductVariant type
+      variants: product.product_variants
     };
     const variant = productToAdd.variants?.find(v => v.id === selectedVariant);
 
@@ -40,7 +41,6 @@ export function ProductDetailPage() {
       payload: { product: productToAdd, quantity, variant }
     });
 
-    // Add this line to reset the quantity after adding to cart
     setQuantity(1);
   };
 
