@@ -1,237 +1,134 @@
-import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react'; // Add useEffect
-import { CartItem, Product, ProductVariant, User } from '../types';
-import { supabase } from '../lib/supabase'; // Import supabase client
+import React from 'react';
+import { useApp } from '../contexts/AppContext';
+import { Link } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
 
-interface AppState {
-  cart: CartItem[];
-  user: User | null;
-  wishlist: string[];
-  isCartOpen: boolean;
-  isMenuOpen: boolean;
-  authLoading: boolean; // Add authLoading state
-}
-
-type AppAction =
-  | { type: 'ADD_TO_CART'; payload: { product: Product; quantity: number; variant?: ProductVariant } }
-  | { type: 'REMOVE_FROM_CART'; payload: { productId: string; variantId?: string } }
-  | { type: 'UPDATE_CART_QUANTITY'; payload: { productId: string; variantId?: string; quantity: number } }
-  | { type: 'CLEAR_CART' }
-  | { type: 'TOGGLE_CART' }
-  | { type: 'CLOSE_CART' }
-  | { type: 'TOGGLE_MENU' }
-  | { type: 'CLOSE_MENU' }
-  | { type: 'ADD_TO_WISHLIST'; payload: string }
-  | { type: 'REMOVE_FROM_WISHLIST'; payload: string }
-  | { type: 'SET_USER'; payload: User | null }
-  | { type: 'SET_AUTH_LOADING'; payload: boolean }; // Add action for auth loading
-
-const initialState: AppState = {
-  cart: [],
-  user: null,
-  wishlist: [],
-  isCartOpen: false,
-  isMenuOpen: false,
-  authLoading: true, // Initialize authLoading to true
-};
-
-const AppContext = createContext<{
-  state: AppState;
-  dispatch: React.Dispatch<AppAction>;
-} | null>(null);
-
-function appReducer(state: AppState, action: AppAction): AppState {
-  switch (action.type) {
-    case 'ADD_TO_CART': {
-      const { product, quantity, variant } = action.payload;
-      const existingItemIndex = state.cart.findIndex(
-        item => item.product.id === product.id &&
-        (variant ? item.variant?.id === variant.id : !item.variant)
-      );
-
-      if (existingItemIndex > -1) {
-        const updatedCart = [...state.cart];
-        updatedCart[existingItemIndex].quantity += quantity;
-        return { ...state, cart: updatedCart };
-      }
-
-      return {
-        ...state,
-        cart: [...state.cart, { product, quantity, variant }]
-      };
-    }
-
-    case 'REMOVE_FROM_CART': {
-      const { productId, variantId } = action.payload;
-      return {
-        ...state,
-        cart: state.cart.filter(
-          item => !(item.product.id === productId &&
-          (variantId ? item.variant?.id === variantId : !item.variant))
-        )
-      };
-    }
-
-    case 'UPDATE_CART_QUANTITY': {
-      const { productId, variantId, quantity } = action.payload;
-      if (quantity <= 0) {
-        return {
-          ...state,
-          cart: state.cart.filter(
-            item => !(item.product.id === productId &&
-            (variantId ? item.variant?.id === variantId : !item.variant))
-          )
-        };
-      }
-
-      return {
-        ...state,
-        cart: state.cart.map(item =>
-          item.product.id === productId &&
-          (variantId ? item.variant?.id === variantId : !item.variant)
-            ? { ...item, quantity }
-            : item
-        )
-      };
-    }
-
-    case 'CLEAR_CART':
-      return { ...state, cart: [] };
-
-    case 'TOGGLE_CART':
-      return { ...state, isCartOpen: !state.isCartOpen };
-
-    case 'CLOSE_CART':
-      return { ...state, isCartOpen: false };
-
-    case 'TOGGLE_MENU':
-      return { ...state, isMenuOpen: !state.isMenuOpen };
-
-    case 'CLOSE_MENU':
-      return { ...state, isMenuOpen: false };
-
-    case 'ADD_TO_WISHLIST':
-      return {
-        ...state,
-        wishlist: state.wishlist.includes(action.payload)
-          ? state.wishlist
-          : [...state.wishlist, action.payload]
-      };
-
-    case 'REMOVE_FROM_WISHLIST':
-      return {
-        ...state,
-        wishlist: state.wishlist.filter(id => id !== action.payload)
-      };
-
-    case 'SET_USER':
-      return { ...state, user: action.payload };
-
-    case 'SET_AUTH_LOADING': // Handle auth loading state
-      return { ...state, authLoading: action.payload };
-
-    default:
-      return state;
-  }
-}
-
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
-
-  // Auth logic moved from useAuth hook
-  useEffect(() => {
-    async function getUserSession() {
-      dispatch({ type: 'SET_AUTH_LOADING', payload: true });
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.error('Error getting session:', sessionError);
-        dispatch({ type: 'SET_USER', payload: null });
-        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-        return;
-      }
-
-      if (session?.user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('first_name, last_name, role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Error fetching user profile:', profileError);
-          dispatch({ type: 'SET_USER', payload: null });
-        } else {
-          dispatch({
-            type: 'SET_USER',
-            payload: {
-              id: session.user.id,
-              email: session.user.email || '',
-              firstName: profile?.first_name || '',
-              lastName: profile?.last_name || '',
-              role: profile?.role || 'customer',
-              addresses: [],
-              orders: [],
-              wishlist: [],
-            },
-          });
-        }
-      } else {
-        dispatch({ type: 'SET_USER', payload: null });
-      }
-      dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-    }
-
-    getUserSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        supabase
-          .from('user_profiles')
-          .select('first_name, last_name, role')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile, error: profileError }) => {
-            if (profileError) {
-              console.error('Error fetching user profile on auth change:', profileError);
-              dispatch({ type: 'SET_USER', payload: null });
-            } else {
-              dispatch({
-                type: 'SET_USER',
-                payload: {
-                  id: session.user.id,
-                  email: session.user.email || '',
-                  firstName: profile?.first_name || '',
-                  lastName: profile?.last_name || '',
-                  role: profile?.role || 'customer',
-                  addresses: [],
-                  orders: [],
-                  wishlist: [],
-                },
-              });
-            }
-          });
-      } else {
-        dispatch({ type: 'SET_USER', payload: null });
-      }
-      dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-    });
-
-    return () => subscription.unsubscribe();
-  }, []); // Empty dependency array means this runs once on mount
+export function CartPage() {
+  const { state, dispatch } = useApp();
+  const total = state.cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
-      {children}
-    </AppContext.Provider>
+    <div className="min-h-screen bg-brown-100 py-8">
+      <div className="container mx-auto px-4">
+        <h1 className="text-4xl font-bold text-brown-900 mb-8 text-center">Your Shopping Cart</h1>
+        {state.cart.length === 0 ? (
+          <div className="flex flex-col items-center justify-center bg-white p-10 rounded-lg shadow-md">
+            <ShoppingCart className="w-24 h-24 text-brown-300 mb-6" />
+            <p className="text-2xl font-medium text-brown-900 mb-3">Your cart is empty</p>
+            <p className="text-brown-600 mb-6">Looks like you haven't added anything to your cart yet.</p>
+            <Link to="/shop">
+              <Button size="lg">Start Shopping</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items List */}
+            <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+              <div className="divide-y divide-brown-200">
+                {state.cart.map((item) => (
+                  <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="flex items-center py-4">
+                    <Link to={`/products/${item.product.slug}`} className="flex-shrink-0">
+                      <img
+                        src={item.product.images[0]}
+                        alt={item.product.name}
+                        className="w-24 h-24 object-cover rounded-lg border border-brown-200"
+                      />
+                    </Link>
+                    <div className="flex-1 ml-4">
+                      <Link to={`/products/${item.product.slug}`}>
+                        <h3 className="font-semibold text-lg text-brown-900 hover:text-brown-700 transition-colors">
+                          {item.product.name}
+                        </h3>
+                      </Link>
+                      {item.variant && (
+                        <p className="text-sm text-brown-600">Variant: {item.variant.name}</p>
+                      )}
+                      <p className="text-brown-700 mt-1">
+                        ${item.product.price.toFixed(2)} each
+                      </p>
+                      <div className="flex items-center mt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => dispatch({
+                            type: 'UPDATE_CART_QUANTITY',
+                            payload: {
+                              productId: item.product.id,
+                              variantId: item.variant?.id,
+                              quantity: item.quantity - 1
+                            }
+                          })}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <span className="mx-4 text-lg font-medium text-brown-900">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => dispatch({
+                            type: 'UPDATE_CART_QUANTITY',
+                            payload: {
+                              productId: item.product.id,
+                              variantId: item.variant?.id,
+                              quantity: item.quantity + 1
+                            }
+                          })}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => dispatch({
+                            type: 'REMOVE_FROM_CART',
+                            payload: {
+                              productId: item.product.id,
+                              variantId: item.variant?.id
+                            }
+                          })}
+                          className="ml-6 text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-5 h-5 mr-1" /> Remove
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-brown-900">
+                        ${(item.product.price * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Order Summary */}
+            <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit sticky top-8">
+              <h2 className="text-2xl font-bold text-brown-900 mb-6">Order Summary</h2>
+              <div className="flex justify-between items-center text-lg text-brown-700 mb-3">
+                <span>Subtotal ({state.cart.length} items)</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-lg text-brown-700 mb-6">
+                <span>Shipping</span>
+                <span>Calculated at checkout</span>
+              </div>
+              <div className="flex justify-between items-center text-2xl font-bold text-brown-900 border-t border-brown-200 pt-4">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+              <Link to="/checkout">
+                <Button className="w-full mt-6" size="lg">
+                  Proceed to Checkout
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
-}
-
-export function useApp() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
 }
