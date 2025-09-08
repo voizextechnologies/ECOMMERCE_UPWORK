@@ -8,7 +8,7 @@ import { useApp } from '../../contexts/AppContext';
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { product, loading, error } = useProduct(slug || '');
-  const { dispatch } = useApp();
+  const { addToCart } = useApp(); // Get addToCart directly
   const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
 
@@ -28,19 +28,10 @@ export function ProductDetailPage() {
     );
   }
 
-   const handleAddToCart = () => {
-    console.log('handleAddToCart called'); // Add this line
-    const productToAdd = {
-      ...product,
-      variants: product.product_variants
-    };
-    const variant = productToAdd.variants?.find(v => v.id === selectedVariant);
-
-    dispatch({
-      type: 'ADD_TO_CART',
-      payload: { product: productToAdd, quantity, variant }
-    });
-
+   const handleAddToCart = async () => { // Make it async
+    console.log('handleAddToCart called');
+    // Call the addToCart function from useApp directly
+    await addToCart(product.id, quantity, selectedVariant);
     setQuantity(1);
   };
 
