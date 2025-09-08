@@ -3,13 +3,13 @@ import { CartItem, Product, ProductVariant, User } from '../types';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../hooks/useSupabase'; // Import useCart
 
-interface AppState {
-  user: User | null;
-  wishlist: string[];
-  isCartOpen: boolean;
-  isMenuOpen: boolean;
-  authLoading: boolean;
-}
+const initialState: AppState = {
+  user: null,
+  wishlist: [],
+  isCartOpen: false,
+  isMenuOpen: false,
+  authLoading: true,
+};
 
 // Removed cart-related actions from AppAction
 type AppAction =
