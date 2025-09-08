@@ -25,6 +25,7 @@ import { AdminAddProductPage } from './pages/AdminAddProductPage';
 import { AdminEditProductPage } from './pages/AdminEditProductPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { AccountDashboardPage } from './pages/AccountDashboardPage';
+import { CartPage } from './pages/CartPage';
 import { LoginPage } from './pages/LoginPage';
 
 // Placeholder for Admin Dashboard Page
@@ -94,6 +95,7 @@ export function AppRoutes() {
           <Route path="/products/:slug" element={<ProductDetailPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/cart" element={<CartPage />} />
 
           {/* Protected User Routes */}
           <Route

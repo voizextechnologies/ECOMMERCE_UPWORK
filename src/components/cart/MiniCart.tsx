@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, ShoppingCart, Plus, Minus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import { Button } from '../ui/Button';
 
@@ -125,9 +126,11 @@ export function MiniCart() {
               </div>
               
               <div className="space-y-2">
-                <Button className="w-full" size="lg">
-                  View Cart
-                </Button>
+                <Link to="/cart">
+                  <Button className="w-full" size="lg" onClick={() => dispatch({ type: 'CLOSE_CART' })}>
+                    View Cart
+                  </Button>
+                </Link>
                 <Button variant="secondary" className="w-full" size="lg">
                   Checkout
                 </Button>
