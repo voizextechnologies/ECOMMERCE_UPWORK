@@ -4,8 +4,8 @@ import { useApp } from '../../contexts/AppContext';
 import { Button } from '../ui/Button';
 
 export function Header() {
-  const { state: { user, authLoading, cart }, dispatch } = useApp(); // Added authLoading to destructuring
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const { state: { user, authLoading }, cartItems, toggleCart } = useApp(); // Destructure new values
+  const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0); // Use cartItems
 
   return (
     <header className="bg-brown-900 text-brown-100 shadow-lg">
@@ -38,7 +38,7 @@ export function Header() {
               variant="ghost"
               size="sm"
               className="lg:hidden text-brown-100 hover:text-brown-500"
-              onClick={() => dispatch({ type: 'TOGGLE_MENU' })}
+              onClick={toggleCart} // Use toggleCart
             >
               <Menu className="w-6 h-6" />
             </Button>
@@ -92,7 +92,7 @@ export function Header() {
               variant="ghost"
               size="sm"
               className="text-brown-100 hover:text-brown-500 relative"
-              onClick={() => dispatch({ type: 'TOGGLE_CART' })}
+              onClick={toggleCart} // Use toggleCart
             >
               <ShoppingCart className="w-5 h-5" />
               <span className="ml-1 hidden lg:inline">Cart</span>
@@ -111,7 +111,7 @@ export function Header() {
             <input
               type="text"
               placeholder="Search products..."
-              className="w-full px-4 py-2 pl-12 rounded-lg text-brown-900 focus:outline-none focus:ring-2 focus:ring-brown-500"
+              className="w-full px-4 py-2 pl-12 rounded-lg text-brown-900 focus:outline-none focus:ring-2 focus:ring-500"
             />
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-brown-500 w-5 h-5" />
           </div>
