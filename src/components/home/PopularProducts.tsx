@@ -5,14 +5,11 @@ import { Button } from '../ui/Button';
 import { useProducts } from '../../hooks/useSupabase'; // Import useProducts hook
 
 export function PopularProducts() {
-  const { dispatch } = useApp();
+  const { addToCart } = useApp(); // Get addToCart directly
   const { products, loading, error } = useProducts({ limit: 6 }); // Limit to 6 products and add stable options
 
-  const addToCart = (product: any) => {
-    dispatch({
-      type: 'ADD_TO_CART',
-      payload: { product, quantity: 1 }
-    });
+  const handleAddToCart = async (product: any) => { // Make it async
+    await addToCart(product.id, 1); // Call addToCart directly
   };
 
   if (loading) {
@@ -118,7 +115,7 @@ export function PopularProducts() {
 
                 <Button
                   className="w-full"
-                  onClick={() => addToCart(product)}
+                  onClick={() => handleAddToCart(product)} // Call the new handleAddToCart
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   Add to Cart
