@@ -1,5 +1,6 @@
 // src/AppRoutes.tsx
 import React from 'react';
+import { Button } from './components/ui/Button';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
