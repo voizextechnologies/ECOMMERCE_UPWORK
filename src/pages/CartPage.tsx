@@ -1,4 +1,4 @@
-mport React from 'react';
+import React from 'react';
 import { useApp } from '../contexts/AppContext';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
