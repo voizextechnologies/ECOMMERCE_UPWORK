@@ -1,4 +1,3 @@
-```typescript
 import React from 'react';
 import { useApp } from '../contexts/AppContext';
 import { Link } from 'react-router-dom';
