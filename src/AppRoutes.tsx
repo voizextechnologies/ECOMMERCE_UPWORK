@@ -27,6 +27,8 @@ import { RegisterPage } from './pages/RegisterPage';
 import { AccountDashboardPage } from './pages/AccountDashboardPage';
 import { CartPage } from './pages/CartPage';
 import { LoginPage } from './pages/LoginPage';
+import { CheckoutPage } from './pages/CheckoutPage'; // Import CheckoutPage
+import { OrderConfirmationPage } from './pages/OrderConfirmationPage'; // Import OrderConfirmationPage
 
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
@@ -106,6 +108,16 @@ export function AppRoutes() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+
 
           {/* Admin Login Route */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
