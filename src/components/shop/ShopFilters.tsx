@@ -233,7 +233,7 @@ export function ShopFilters() {
                 </div>
               </div>
               
-              <div className="relative">
+              <div className="relative h-6"> {/* Increased height to accommodate larger thumbs */}
                 <input
                   type="range"
                   min="0"
@@ -241,7 +241,8 @@ export function ShopFilters() {
                   value={minPrice}
                   onChange={handlePriceChange}
                   id="minPriceSlider"
-                  className="absolute w-full h-2 bg-brown-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                  className="absolute w-full h-2 rounded-lg appearance-none cursor-pointer slider-thumb slider-track z-10" // Removed bg-brown-200
+                  style={{ top: '50%', transform: 'translateY(-50%)' }} // Center vertically
                 />
                 <input
                   type="range"
@@ -250,8 +251,14 @@ export function ShopFilters() {
                   value={maxPrice}
                   onChange={handlePriceChange}
                   id="maxPriceSlider"
-                  className="absolute w-full h-2 bg-brown-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                  className="absolute w-full h-2 rounded-lg appearance-none cursor-pointer slider-thumb slider-track z-20" // Removed bg-brown-200
+                  style={{ top: '50%', transform: 'translateY(-50%)' }} // Center vertically
                 />
+                {/* To visually represent the "filled" range between the two thumbs,
+                    a more advanced CSS technique or a dedicated library would be needed.
+                    With two separate native range inputs, styling the "fill" between them
+                    is not straightforward. The current approach focuses on making the
+                    thumbs and the overall track clearer and more interactive. */}
               </div>
               
               <div className="flex justify-between text-sm text-brown-600 mt-6">
