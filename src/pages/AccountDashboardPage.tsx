@@ -3,13 +3,14 @@ import { useApp } from '../contexts/AppContext';
 import { AddressList } from '../components/account/AddressList';
 import { AddressForm } from '../components/account/AddressForm';
 import { Button } from '../components/ui/Button';
-import { User, MapPin, Package, Heart, Settings } from 'lucide-react';
+import { User, MapPin, Package, Heart, Settings, LogOut } from 'lucide-react'; // Added LogOut icon
+import { supabase } from '../lib/supabase'; // Import supabase
 
 type ActiveTab = 'profile' | 'addresses' | 'orders' | 'wishlist' | 'settings';
 
 export function AccountDashboardPage() {
   const { state } = useApp();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('addresses');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('profile'); // Changed default tab to profile
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<any>(null);
 
@@ -34,6 +35,14 @@ export function AccountDashboardPage() {
   const handleFormClose = () => {
     setShowAddressForm(false);
     setEditingAddress(null);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // Supabase's onAuthStateChange listener in AppContext will handle setting user to null
+    // and ProtectedRoute will redirect to login if needed.
+    // Optionally, you can navigate explicitly if you want to ensure a specific redirect.
+    // For example: navigate('/login');
   };
 
   const renderTabContent = () => {
@@ -120,7 +129,11 @@ export function AccountDashboardPage() {
         return (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-brown-900 mb-6">Account Settings</h2>
-            <p className="text-brown-600">Account settings coming soon!</p>
+            <p className="text-brown-600 mb-4">Account settings coming soon!</p>
+            <Button onClick={handleLogout} variant="secondary">
+              <LogOut className="w-5 h-5 mr-2" />
+              Logout
+            </Button>
           </div>
         );
 
