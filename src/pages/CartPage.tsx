@@ -1,5 +1,4 @@
-```typescript
-import React from 'react';
+mport React from 'react';
 import { useApp } from '../contexts/AppContext';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
@@ -30,7 +29,7 @@ export function CartPage() {
             <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
               <div className="divide-y divide-brown-200">
                 {state.cart.map((item) => (
-                  <div key={\`${item.product.id}-${item.variant?.id || 'default'}`} className="flex items-center py-4">
+                  <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="flex items-center py-4">
                     <Link to={`/products/${item.product.slug}`} className="flex-shrink-0">
                       <img
                         src={item.product.images[0]}
@@ -146,4 +145,3 @@ export function CartPage() {
     </div>
   );
 }
-```
