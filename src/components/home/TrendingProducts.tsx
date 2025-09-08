@@ -4,14 +4,11 @@ import { useApp } from '../../contexts/AppContext';
 import { useProducts } from '../../hooks/useSupabase'; // Import useProducts hook
 
 export function TrendingProducts() {
-  const { dispatch } = useApp();
+  const { addToCart } = useApp(); // Get addToCart directly
   const { products, loading, error } = useProducts({ limit: 4 }); // Limit to 4 products and add stable options
 
-  const addToCart = (product: any) => {
-    dispatch({
-      type: 'ADD_TO_CART',
-      payload: { product, quantity: 1 }
-    });
+  const handleAddToCart = async (product: any) => { // Make it async
+    await addToCart(product.id, 1); // Call addToCart directly
   };
 
   if (loading) {
@@ -117,7 +114,7 @@ export function TrendingProducts() {
                   </div>
                   
                   <button
-                    onClick={() => addToCart(product)}
+                    onClick={() => handleAddToCart(product)} // Call the new handleAddToCart
                     className="bg-brown-900 hover:bg-brown-700 text-brown-100 p-3 rounded-lg transition-colors"
                   >
                     <ShoppingCart className="w-5 h-5" />
