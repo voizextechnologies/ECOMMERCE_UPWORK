@@ -4,8 +4,8 @@ import { useApp } from '../../contexts/AppContext';
 import { Button } from '../ui/Button';
 
 export function Header() {
-  const { state, dispatch } = useApp();
-  const cartItemCount = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+  const { state: { user, authLoading, cart }, dispatch } = useApp(); // Added authLoading to destructuring
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <header className="bg-brown-900 text-brown-100 shadow-lg">
@@ -66,7 +66,13 @@ export function Header() {
               <span className="ml-1 hidden lg:inline">Wishlist</span>
             </Button>
             
-            {state.user ? (
+            {/* Conditional rendering based on authLoading and user state */}
+            {authLoading ? (
+              <Button variant="ghost" size="sm" className="text-brown-100 hover:text-brown-500 hidden sm:flex">
+                <User className="w-5 h-5" />
+                <span className="ml-1 hidden lg:inline">Loading...</span>
+              </Button>
+            ) : user ? (
               <a href="/account">
                 <Button variant="ghost" size="sm" className="text-brown-100 hover:text-brown-500 hidden sm:flex">
                   <User className="w-5 h-5" />
