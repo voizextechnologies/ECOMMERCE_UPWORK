@@ -43,22 +43,53 @@
   /* Custom slider styles */
   .slider-thumb::-webkit-slider-thumb {
     appearance: none;
-    height: 20px;
-    width: 20px;
+    height: 24px; /* Slightly larger */
+    width: 24px;  /* Slightly larger */
     border-radius: 50%;
-    background: #3B2415;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    border: 2px solid white;
+    background: #3B2415; /* Dark brown */
+    cursor: grab; /* Indicate draggable */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* More pronounced shadow */
+    border: 3px solid white; /* Thicker white border */
+    transition: box-shadow 0.2s ease, transform 0.2s ease; /* Smooth transition */
+  }
+  
+  .slider-thumb::-webkit-slider-thumb:active {
+    cursor: grabbing; /* Change cursor when dragging */
+    transform: scale(1.1); /* Slight scale effect when active */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
   }
   
   .slider-thumb::-moz-range-thumb {
-    height: 20px;
-    width: 20px;
+    height: 24px;
+    width: 24px;
     border-radius: 50%;
     background: #3B2415;
+    cursor: grab;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border: 3px solid white;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  
+  .slider-thumb::-moz-range-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Style the track */
+  .slider-track::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px; /* Slightly thicker track */
+    background: #D5C2A5; /* Tan color for the track */
+    border-radius: 4px;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    border: 2px solid white;
+  }
+  
+  .slider-track::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    background: #D5C2A5;
+    border-radius: 4px;
+    cursor: pointer;
   }
 }
