@@ -35,6 +35,7 @@ export function ProductListing({ itemsPerPage }: ProductListingProps) {
   const { products, loading, error } = useProducts(productOptions);
 
   const addToCart = (product: Product) => {
+    console.log('ProductListing: Attempting to add product to cart:', product); // Add this line
     dispatch({
       type: 'ADD_TO_CART',
       payload: { product, quantity: 1 }
