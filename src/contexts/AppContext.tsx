@@ -64,12 +64,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return newState;
     }
 
-      return {
-        ...state,
-        cart: [...state.cart, { product, quantity, variant }]
-      };
-    }
-
     case 'REMOVE_FROM_CART': {
       const { productId, variantId } = action.payload;
       return {
