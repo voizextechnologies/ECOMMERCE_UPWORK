@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import Button from '../components/ui/Button';
+import { Button } from '../components/ui/Button';
 
 export function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -18,7 +18,7 @@ export function RegisterPage() {
     setError(null);
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -31,6 +31,26 @@ export function RegisterPage() {
 
       if (signUpError) {
         throw signUpError;
+      }
+
+      // Update user profile with first_name and last_name
+      if (user) {
+        try {
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .upsert({
+              id: user.id,
+              first_name: firstName,
+              last_name: lastName,
+            });
+
+          if (profileError) {
+            console.error('Error updating user profile:', profileError);
+            // Note: We don't throw here because the main registration was successful
+          }
+        } catch (profileErr) {
+          console.error('Error during profile update:', profileErr);
+        }
       }
 
       // Redirect to home page after successful registration
@@ -127,7 +147,7 @@ export function RegisterPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </Button>
@@ -136,5 +156,5 @@ export function RegisterPage() {
       </div>
     </div>
   );
-};
+}
 
