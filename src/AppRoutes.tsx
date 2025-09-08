@@ -22,6 +22,7 @@ import { useApp } from './contexts/AppContext'; // Import useApp instead of useA
 import { AdminProductListPage } from './pages/AdminProductListPage';
 import { AdminAddProductPage } from './pages/AdminAddProductPage';
 import { AdminEditProductPage } from './pages/AdminEditProductPage';
+import { RegisterPage } from './pages/RegisterPage';
 
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
@@ -87,6 +88,7 @@ export function AppRoutes() {
           } />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/products/:slug" element={<ProductDetailPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
           {/* Admin Login Route */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
