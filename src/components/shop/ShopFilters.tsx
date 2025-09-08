@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDepartments, useProducts } from '../../hooks/useSupabase';
 import { Link, useSearchParams } from 'react-router-dom';
+import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 
 export function ShopFilters() {
   const { departments, loading: departmentsLoading, error: departmentsError } = useDepartments();
@@ -16,10 +17,15 @@ export function ShopFilters() {
     searchParams.getAll('brand')
   );
 
+  // Collapsible sections state
+  const [expandedSections, setExpandedSections] = useState({
+    category: true,
+    price: true,
+    brand: true,
+  });
+
   // Fetch products to get unique brands for the brand filter
-  // This is a simplified approach; for a large number of products,
-  // you might want a dedicated Supabase function to get unique brands.
-  const { products: allProducts, loading: productsLoading, error: productsError } = useProducts({ limit: 1000 }); // Get more products for brand filtering
+  const { products: allProducts, loading: productsLoading, error: productsError } = useProducts({ limit: 1000 });
   const uniqueBrands = Array.from(new Set(allProducts.map(p => p.brand))).filter(Boolean) as string[];
 
   useEffect(() => {
@@ -47,6 +53,21 @@ export function ShopFilters() {
     });
   };
 
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const clearAllFilters = () => {
+    const newSearchParams = new URLSearchParams();
+    setSearchParams(newSearchParams);
+    setMinPrice(0);
+    setMaxPrice(1000);
+    setSelectedBrands([]);
+  };
+
   const applyFilters = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString());
     newSearchParams.delete('page'); // Reset page when filters change
@@ -69,132 +90,233 @@ export function ShopFilters() {
     setSearchParams(newSearchParams);
   };
 
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold text-brown-900 mb-4">Filters</h2>
+  const hasActiveFilters = minPrice > 0 || maxPrice < 1000 || selectedBrands.length > 0 || searchParams.get('category');
 
-      {/* Category Filter */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-brown-700 mb-3">Category</h3>
-        {departmentsLoading ? (
-          <p className="text-brown-600">Loading categories...</p>
-        ) : departmentsError ? (
-          <p className="text-red-500">Error loading categories: {departmentsError}</p>
-        ) : (
-          <ul className="space-y-2 text-brown-600">
-            <li>
-              <Link
-                to="/shop"
-                className={`hover:text-brown-900 ${!searchParams.get('category') ? 'font-bold text-brown-900' : ''}`}
-                onClick={() => {
-                  const newSearchParams = new URLSearchParams(searchParams.toString());
-                  newSearchParams.delete('category');
-                  newSearchParams.delete('page');
-                  setSearchParams(newSearchParams);
-                }}
-              >
-                All Categories
-              </Link>
-            </li>
-            {departments.map((department) => (
-              <React.Fragment key={department.id}>
-                {department.categories && department.categories.map((category) => (
-                  <li key={category.id}>
+  return (
+    <div className="bg-white rounded-xl shadow-lg border border-brown-100 overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-brown-900 to-brown-700 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Filter className="w-5 h-5 text-white mr-2" />
+            <h2 className="text-xl font-bold text-white">Filters</h2>
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="flex items-center text-brown-200 hover:text-white text-sm transition-colors"
+            >
+              <X className="w-4 h-4 mr-1" />
+              Clear All
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6">
+        {/* Category Filter */}
+        <div className="border-b border-brown-100 pb-6">
+          <button
+            onClick={() => toggleSection('category')}
+            className="flex items-center justify-between w-full text-left mb-4 group"
+          >
+            <h3 className="text-lg font-semibold text-brown-900 group-hover:text-brown-700 transition-colors">
+              Category
+            </h3>
+            {expandedSections.category ? (
+              <ChevronUp className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            )}
+          </button>
+          
+          {expandedSections.category && (
+            <div className="space-y-2">
+              {departmentsLoading ? (
+                <div className="animate-pulse space-y-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="h-4 bg-brown-100 rounded"></div>
+                  ))}
+                </div>
+              ) : departmentsError ? (
+                <p className="text-red-500 text-sm">Error loading categories</p>
+              ) : (
+                <>
+                  <div className="mb-3">
                     <Link
-                      to={`/shop?category=${category.slug}`}
-                      className={`hover:text-brown-900 ${searchParams.get('category') === category.slug ? 'font-bold text-brown-900' : ''}`}
+                      to="/shop"
+                      className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        !searchParams.get('category')
+                          ? 'bg-brown-900 text-white shadow-md'
+                          : 'text-brown-700 hover:bg-brown-50 hover:text-brown-900'
+                      }`}
                       onClick={() => {
                         const newSearchParams = new URLSearchParams(searchParams.toString());
-                        newSearchParams.set('category', category.slug);
+                        newSearchParams.delete('category');
                         newSearchParams.delete('page');
                         setSearchParams(newSearchParams);
                       }}
                     >
-                      {category.name}
+                      All Categories
                     </Link>
-                  </li>
-                ))}
-              </React.Fragment>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Price Range Filter */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-brown-700 mb-3">Price Range</h3>
-        <div className="flex items-center space-x-2 mb-2">
-          <input
-            type="number"
-            id="minPrice"
-            value={minPrice}
-            onChange={handlePriceChange}
-            className="w-1/2 px-2 py-1 border border-brown-300 rounded text-sm"
-          />
-          <span>-</span>
-          <input
-            type="number"
-            id="maxPrice"
-            value={maxPrice}
-            onChange={handlePriceChange}
-            className="w-1/2 px-2 py-1 border border-brown-300 rounded text-sm"
-          />
+                  </div>
+                  {departments.map((department) => (
+                    <div key={department.id} className="space-y-1">
+                      {department.categories && department.categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          to={`/shop?category=${category.slug}`}
+                          className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                            searchParams.get('category') === category.slug
+                              ? 'bg-brown-100 text-brown-900 font-medium border-l-4 border-brown-500'
+                              : 'text-brown-600 hover:bg-brown-50 hover:text-brown-800'
+                          }`}
+                          onClick={() => {
+                            const newSearchParams = new URLSearchParams(searchParams.toString());
+                            newSearchParams.set('category', category.slug);
+                            newSearchParams.delete('page');
+                            setSearchParams(newSearchParams);
+                          }}
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
         </div>
-        <input
-          type="range"
-          min="0"
-          max="1000"
-          value={minPrice}
-          onChange={handlePriceChange}
-          id="minPriceSlider"
-          className="w-full h-2 bg-brown-200 rounded-lg appearance-none cursor-pointer mb-2"
-        />
-        <input
-          type="range"
-          min="0"
-          max="1000"
-          value={maxPrice}
-          onChange={handlePriceChange}
-          id="maxPriceSlider"
-          className="w-full h-2 bg-brown-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between text-sm text-brown-600 mt-2">
-          <span>${minPrice}</span>
-          <span>${maxPrice}+</span>
-        </div>
-      </div>
 
-      {/* Brand Filter */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-brown-700 mb-3">Brand</h3>
-        {productsLoading ? (
-          <p className="text-brown-600">Loading brands...</p>
-        ) : productsError ? (
-          <p className="text-red-500">Error loading brands: {productsError}</p>
-        ) : (
-          <div className="space-y-2">
-            {uniqueBrands.map((brand) => (
-              <label key={brand} className="flex items-center text-brown-600">
+        {/* Price Range Filter */}
+        <div className="border-b border-brown-100 pb-6">
+          <button
+            onClick={() => toggleSection('price')}
+            className="flex items-center justify-between w-full text-left mb-4 group"
+          >
+            <h3 className="text-lg font-semibold text-brown-900 group-hover:text-brown-700 transition-colors">
+              Price Range
+            </h3>
+            {expandedSections.price ? (
+              <ChevronUp className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            )}
+          </button>
+          
+          {expandedSections.price && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-brown-600 mb-1">Min</label>
+                  <input
+                    type="number"
+                    id="minPrice"
+                    value={minPrice}
+                    onChange={handlePriceChange}
+                    className="w-full px-3 py-2 border border-brown-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="text-brown-400 mt-6">-</div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-brown-600 mb-1">Max</label>
+                  <input
+                    type="number"
+                    id="maxPrice"
+                    value={maxPrice}
+                    onChange={handlePriceChange}
+                    className="w-full px-3 py-2 border border-brown-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                    placeholder="1000"
+                  />
+                </div>
+              </div>
+              
+              <div className="relative">
                 <input
-                  type="checkbox"
-                  className="form-checkbox text-brown-500 rounded"
-                  checked={selectedBrands.includes(brand)}
-                  onChange={(e) => handleBrandChange(brand, e.target.checked)}
+                  type="range"
+                  min="0"
+                  max="1000"
+                  value={minPrice}
+                  onChange={handlePriceChange}
+                  id="minPriceSlider"
+                  className="absolute w-full h-2 bg-brown-200 rounded-lg appearance-none cursor-pointer slider-thumb"
                 />
-                <span className="ml-2">{brand}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1000"
+                  value={maxPrice}
+                  onChange={handlePriceChange}
+                  id="maxPriceSlider"
+                  className="absolute w-full h-2 bg-brown-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                />
+              </div>
+              
+              <div className="flex justify-between text-sm text-brown-600 mt-6">
+                <span className="bg-brown-50 px-2 py-1 rounded font-medium">${minPrice}</span>
+                <span className="bg-brown-50 px-2 py-1 rounded font-medium">${maxPrice}+</span>
+              </div>
+            </div>
+          )}
+        </div>
 
-      {/* Apply Filters Button */}
-      <button
-        onClick={applyFilters}
-        className="w-full bg-brown-900 text-white py-2 rounded-lg hover:bg-brown-700 transition-colors"
-      >
-        Apply Filters
-      </button>
+        {/* Brand Filter */}
+        <div className="pb-6">
+          <button
+            onClick={() => toggleSection('brand')}
+            className="flex items-center justify-between w-full text-left mb-4 group"
+          >
+            <h3 className="text-lg font-semibold text-brown-900 group-hover:text-brown-700 transition-colors">
+              Brand
+            </h3>
+            {expandedSections.brand ? (
+              <ChevronUp className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            )}
+          </button>
+          
+          {expandedSections.brand && (
+            <div className="space-y-3">
+              {productsLoading ? (
+                <div className="animate-pulse space-y-2">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-6 bg-brown-100 rounded"></div>
+                  ))}
+                </div>
+              ) : productsError ? (
+                <p className="text-red-500 text-sm">Error loading brands</p>
+              ) : (
+                <div className="max-h-48 overflow-y-auto space-y-2">
+                  {uniqueBrands.map((brand) => (
+                    <label key={brand} className="flex items-center group cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-brown-600 bg-brown-50 border-brown-300 rounded focus:ring-brown-500 focus:ring-2"
+                        checked={selectedBrands.includes(brand)}
+                        onChange={(e) => handleBrandChange(brand, e.target.checked)}
+                      />
+                      <span className="ml-3 text-sm text-brown-700 group-hover:text-brown-900 transition-colors">
+                        {brand}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Apply Filters Button */}
+        <button
+          onClick={applyFilters}
+          className="w-full bg-gradient-to-r from-brown-900 to-brown-700 hover:from-brown-800 hover:to-brown-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+        >
+          Apply Filters
+        </button>
+      </div>
     </div>
   );
 }

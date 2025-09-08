@@ -39,4 +39,26 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Custom slider styles */
+  .slider-thumb::-webkit-slider-thumb {
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #3B2415;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    border: 2px solid white;
+  }
+  
+  .slider-thumb::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #3B2415;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    border: 2px solid white;
+  }
 }
