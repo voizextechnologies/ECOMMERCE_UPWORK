@@ -39,6 +39,9 @@ export function ProductDetailPage() {
       type: 'ADD_TO_CART',
       payload: { product: productToAdd, quantity, variant }
     });
+
+    // Add this line to reset the quantity after adding to cart
+    setQuantity(1);
   };
 
   const handleQuantityChange = (amount: number) => {
