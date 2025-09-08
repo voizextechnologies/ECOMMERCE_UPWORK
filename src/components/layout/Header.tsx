@@ -66,10 +66,21 @@ export function Header() {
               <span className="ml-1 hidden lg:inline">Wishlist</span>
             </Button>
             
-            <Button variant="ghost" size="sm" className="text-brown-100 hover:text-brown-500 hidden sm:flex">
-              <User className="w-5 h-5" />
-              <span className="ml-1 hidden lg:inline">Account</span>
-            </Button>
+            {state.user ? (
+              <a href="/account">
+                <Button variant="ghost" size="sm" className="text-brown-100 hover:text-brown-500 hidden sm:flex">
+                  <User className="w-5 h-5" />
+                  <span className="ml-1 hidden lg:inline">Account</span>
+                </Button>
+              </a>
+            ) : (
+              <a href="/login">
+                <Button variant="ghost" size="sm" className="text-brown-100 hover:text-brown-500 hidden sm:flex">
+                  <User className="w-5 h-5" />
+                  <span className="ml-1 hidden lg:inline">Login</span>
+                </Button>
+              </a>
+            )}
 
             <Button
               variant="ghost"

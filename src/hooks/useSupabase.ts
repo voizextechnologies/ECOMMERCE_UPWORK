@@ -312,6 +312,91 @@ import type { Database } from '../lib/supabase';
 
 // ... (other hooks like useProducts, useDepartments, useProduct, useCart remain unchanged)
 
+// Hook for user addresses
+export function useAddresses(userId: string | null) {
+  const [addresses, setAddresses] = useState<Tables['addresses']['Row'][]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchAddresses() {
+      if (!userId) {
+        setAddresses([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('addresses')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setAddresses(data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch addresses');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAddresses();
+  }, [userId]);
+
+  const addAddress = async (addressData: Tables['addresses']['Insert']) => {
+    if (!userId) throw new Error('User must be logged in');
+
+    const { data, error } = await supabase
+      .from('addresses')
+      .insert({ ...addressData, user_id: userId })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setAddresses(prev => [data, ...prev]);
+    return data;
+  };
+
+  const updateAddress = async (id: string, addressData: Tables['addresses']['Update']) => {
+    const { data, error } = await supabase
+      .from('addresses')
+      .update(addressData)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setAddresses(prev => prev.map(addr => addr.id === id ? data : addr));
+    return data;
+  };
+
+  const deleteAddress = async (id: string) => {
+    const { error } = await supabase
+      .from('addresses')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    setAddresses(prev => prev.filter(addr => addr.id !== id));
+  };
+
+  return {
+    addresses,
+    loading,
+    error,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+  };
+}
+
 // Admin-specific product CRUD operations
 // Admin-specific product CRUD operations
 export function useAdminProducts() {

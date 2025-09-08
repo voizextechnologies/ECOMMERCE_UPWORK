@@ -24,6 +24,8 @@ import { AdminProductListPage } from './pages/AdminProductListPage';
 import { AdminAddProductPage } from './pages/AdminAddProductPage';
 import { AdminEditProductPage } from './pages/AdminEditProductPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { AccountDashboardPage } from './pages/AccountDashboardPage';
+import { LoginPage } from './pages/LoginPage';
 
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
@@ -68,10 +70,11 @@ function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
 export function AppRoutes() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAuthRoute = location.pathname === '/register' || location.pathname === '/login';
 
   return (
     <div className="min-h-screen bg-brown-300">
-      {!isAdminRoute && <Header />}
+      {!isAdminRoute && !isAuthRoute && <Header />}
       <main>
         <Routes>
           {/* Public Routes */}
@@ -90,6 +93,17 @@ export function AppRoutes() {
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/products/:slug" element={<ProductDetailPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected User Routes */}
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <AccountDashboardPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin Login Route */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -119,7 +133,7 @@ export function AppRoutes() {
           />
         </Routes>
       </main>
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isAuthRoute && <Footer />}
       <MiniCart />
     </div>
   );

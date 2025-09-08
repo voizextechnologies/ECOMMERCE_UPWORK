@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 
@@ -53,8 +53,8 @@ export function RegisterPage() {
         }
       }
 
-      // Redirect to home page after successful registration
-      navigate('/');
+      // Redirect to account dashboard after successful registration
+      navigate('/account');
     } catch (error: any) {
       setError(error.message || 'An error occurred during registration');
     } finally {
@@ -69,6 +69,15 @@ export function RegisterPage() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{' '}
+            <Link
+              to="/login"
+              className="font-medium text-brown-600 hover:text-brown-500"
+            >
+              sign in to your existing account
+            </Link>
+          </p>
         </div>
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
