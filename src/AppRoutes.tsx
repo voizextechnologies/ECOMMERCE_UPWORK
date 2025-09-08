@@ -54,8 +54,8 @@ function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    console.log('ProtectedRoute: No user found, redirecting to /admin/login');
-    return <Navigate to="/admin/login" replace />;
+    console.log('ProtectedRoute: No user found, redirecting to /login');
+    return <Navigate to="/login" replace />; // Changed redirect target to /login
   }
 
   if (adminOnly && user.role !== 'admin') {
@@ -138,4 +138,3 @@ export function AppRoutes() {
     </div>
   );
 }
-
