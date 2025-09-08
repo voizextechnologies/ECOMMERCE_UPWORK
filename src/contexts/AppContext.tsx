@@ -50,11 +50,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
       );
 
       let newState; // Declare newState here
-      if (existingItemIndex > -1) {
-        const updatedCart = [...state.cart];
-        updatedCart[existingItemIndex].quantity += quantity;
-        newState = { ...state, cart: updatedCart };
-      } else {
+      // Inside the ADD_TO_CART case:
+if (existingItemIndex > -1) {
+  const updatedCart = [...state.cart]; // Creates a new array
+  updatedCart[existingItemIndex].quantity += quantity; // MUTATES the object inside the new array
+  newState = { ...state, cart: updatedCart };
+}
+ else {
         newState = {
           ...state,
           cart: [...state.cart, { product, quantity, variant }]
