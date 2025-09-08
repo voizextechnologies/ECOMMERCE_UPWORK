@@ -45,10 +45,16 @@ export interface Category {
   productCount: number;
 }
 
+// Updated CartItem interface to match Supabase join structure
 export interface CartItem {
-  product: Product;
+  id: string; // cart_item id
+  user_id: string;
+  product_id: string;
+  variant_id: string | null;
   quantity: number;
-  variant?: ProductVariant;
+  created_at: string;
+  products: Product; // Nested product object from join
+  product_variants: ProductVariant | null; // Nested variant object from join
 }
 
 export interface User {
