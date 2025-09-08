@@ -7,6 +7,8 @@ import { Button } from '../ui/Button';
 export function MiniCart() {
   const { isCartOpen, closeCart, cartItems, removeFromCart, updateQuantity } = useApp(); // Destructure new values
 
+  console.log('MiniCart: isCartOpen state:', isCartOpen); // Debug log
+
   if (!isCartOpen) return null;
 
   // Calculate total based on the nested product price
