@@ -42,18 +42,21 @@ const AppContext = createContext<{
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      console.log('AppContext Reducer: Handling ADD_TO_CART action. Payload:', action.payload); // Add this line
+      console.log('AppContext Reducer: Handling ADD_TO_CART action. Payload:', action.payload);
       const { product, quantity, variant } = action.payload;
       const existingItemIndex = state.cart.findIndex(
         item => item.product.id === product.id &&
         (variant ? item.variant?.id === variant.id : !item.variant)
       );
 
-      let newState; // Declare newState here
-      // Inside the ADD_TO_CART case:
+      let newState;
       if (existingItemIndex > -1) {
         const updatedCart = [...state.cart]; // Creates a new array
-        updatedCart[existingItemIndex].quantity += quantity; // MUTATES the object inside the new array
+        // IMPORTANT: Create a new object for the updated item to ensure immutability
+        updatedCart[existingItemIndex] = {
+          ...updatedCart[existingItemIndex],
+          quantity: updatedCart[existingItemIndex].quantity + quantity
+        };
         newState = { ...state, cart: updatedCart };
       } else {
         newState = {
@@ -61,7 +64,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           cart: [...state.cart, { product, quantity, variant }]
         };
       }
-      console.log('AppContext Reducer: New cart state:', newState.cart); // Add this line
+      console.log('AppContext Reducer: New cart state:', newState.cart);
       return newState;
     }
 
