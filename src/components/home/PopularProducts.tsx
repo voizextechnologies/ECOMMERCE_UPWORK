@@ -3,6 +3,7 @@ import { Star, ShoppingCart } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { Button } from '../ui/Button';
 import { useProducts } from '../../hooks/useSupabase'; // Import useProducts hook
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 export function PopularProducts() {
   const { addToCart } = useApp(); // Get addToCart directly
@@ -57,18 +58,20 @@ export function PopularProducts() {
               key={product.id}
               className="bg-white border border-brown-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
             >
-              <div className="relative">
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                {product.original_price && ( // Use original_price from Supabase
-                  <div className="absolute top-2 left-2 bg-brown-500 text-white px-2 py-1 rounded text-sm font-medium">
-                    SALE
-                  </div>
-                )}
-              </div>
+              <Link to={`/products/${product.slug}`} className="block"> {/* Wrap the entire clickable area */}
+                <div className="relative">
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {product.original_price && ( // Use original_price from Supabase
+                    <div className="absolute top-2 left-2 bg-brown-500 text-white px-2 py-1 rounded text-sm font-medium">
+                      SALE
+                    </div>
+                  )}
+                </div>
+              </Link>
 
               <div className="p-6">
                 <div className="flex items-center mb-2">
@@ -89,9 +92,11 @@ export function PopularProducts() {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-semibold text-brown-900 mb-2 group-hover:text-brown-700 transition-colors">
-                  {product.name}
-                </h3>
+                <Link to={`/products/${product.slug}`}> {/* Wrap title with Link */}
+                  <h3 className="text-lg font-semibold text-brown-900 mb-2 group-hover:text-brown-700 transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
                 
                 <p className="text-brown-600 text-sm mb-4 line-clamp-2">
                   {product.description}
@@ -126,9 +131,12 @@ export function PopularProducts() {
         </div>
 
         <div className="text-center mt-12">
-          <Button variant="outline" size="lg">
+          <Link
+            to="/shop" // Link to general shop page
+            className="inline-flex items-center px-8 py-3 bg-brown-900 text-white font-medium rounded-lg hover:bg-brown-700 transition-colors duration-200"
+          >
             View All Products
-          </Button>
+          </Link>
         </div>
       </div>
     </section>
