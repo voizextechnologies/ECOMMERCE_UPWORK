@@ -20,7 +20,7 @@ const slides = [
     description: 'Discover our range of professional-grade power tools',
     image: 'https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg',
     cta: 'View Power Tools',
-    link: '/our-range/tools-equipment'
+    link: '/our-range/'
   },
   {
     id: 3,
