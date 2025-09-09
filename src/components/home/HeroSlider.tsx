@@ -11,7 +11,7 @@ const slides = [
     description: 'Stock up on concrete, timber, and hardware essentials',
     image: 'https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg',
     cta: 'Shop Building Materials',
-    link: '/our-range'
+    link: '/shop'
   },
   {
     id: 2,
@@ -20,7 +20,7 @@ const slides = [
     description: 'Discover our range of professional-grade power tools',
     image: 'https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg',
     cta: 'View Power Tools',
-    link: '/our-range'
+    link: '/shop'
   },
   {
     id: 3,
@@ -29,7 +29,7 @@ const slides = [
     description: 'Transform your outdoor space with our garden range',
     image: 'https://images.pexels.com/photos/296230/pexels-photo-296230.jpeg',
     cta: 'Explore Garden Range',
-    link: '/our-range'
+    link: '/shop'
   }
 ];
 
