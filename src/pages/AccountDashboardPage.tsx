@@ -5,6 +5,7 @@ import { AddressForm } from '../components/account/AddressForm';
 import { Button } from '../components/ui/Button';
 import { User, MapPin, Package, Heart, Settings, LogOut } from 'lucide-react'; // Added LogOut icon
 import { supabase } from '../lib/supabase'; // Import supabase
+import { OrderHistory } from '../components/account/OrderHistory'; // Import OrderHistory component
 
 type ActiveTab = 'profile' | 'addresses' | 'orders' | 'wishlist' | 'settings';
 
@@ -110,12 +111,7 @@ export function AccountDashboardPage() {
         );
 
       case 'orders':
-        return (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-brown-900 mb-6">Order History</h2>
-            <p className="text-brown-600">No orders found. Start shopping to see your orders here!</p>
-          </div>
-        );
+        return <OrderHistory />; // Render the OrderHistory component here
 
       case 'wishlist':
         return (
