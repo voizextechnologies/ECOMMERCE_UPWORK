@@ -3,25 +3,56 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminOrders } from '../hooks/useSupabase';
 import { Button } from '../components/ui/Button';
 import { ArrowLeft, Package, User, MapPin, DollarSign } from 'lucide-react';
+import { supabase } from '../lib/supabase'; // Import supabase client
 
 export function AdminOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { fetchOrderById, updateOrderStatus, loading, error } = useAdminOrders();
-  const [order, setOrder] = useState<any>(null); // Use 'any' for now due to complex joined types
+  const [order, setOrder] = useState<any>(null); // Use 'any' for now for the base order data
+  const [customerInfo, setCustomerInfo] = useState<{ name: string; email: string } | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [fetchingCustomerInfo, setFetchingCustomerInfo] = useState(false);
 
   useEffect(() => {
-    const getOrder = async () => {
-      if (id) {
-        const data = await fetchOrderById(id);
-        if (data) {
-          setOrder(data);
+    const getOrderAndCustomerInfo = async () => {
+      if (!id) return;
+
+      const fetchedOrder = await fetchOrderById(id);
+      if (fetchedOrder) {
+        setOrder(fetchedOrder);
+
+        // Fetch customer profile and email separately
+        setFetchingCustomerInfo(true);
+        let customerName = 'N/A';
+        let customerEmail = 'N/A';
+
+        // Fetch user profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('first_name, last_name')
+          .eq('id', fetchedOrder.user_id)
+          .single();
+
+        if (profileData) {
+          customerName = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+        } else if (profileError) {
+          console.error(`Error fetching profile for user ${fetchedOrder.user_id}:`, profileError);
         }
+
+        // Fetch user email from auth.users
+        const { data: userData, error: userError } = await supabase.auth.admin.getUserById(fetchedOrder.user_id);
+        if (userData?.user) {
+          customerEmail = userData.user.email || 'N/A';
+        } else if (userError) {
+          console.error(`Error fetching user email for user ${fetchedOrder.user_id}:`, userError);
+        }
+        setCustomerInfo({ name: customerName, email: customerEmail });
+        setFetchingCustomerInfo(false);
       }
     };
-    getOrder();
+    getOrderAndCustomerInfo();
   }, [id, fetchOrderById]);
 
   const handleStatusChange = async (newStatus: string) => {
@@ -42,7 +73,7 @@ export function AdminOrderDetailPage() {
     }
   };
 
-  if (loading || !order) {
+  if (loading || !order || fetchingCustomerInfo) {
     return <div className="text-center py-8">Loading order details...</div>;
   }
 
@@ -79,7 +110,8 @@ export function AdminOrderDetailPage() {
             </div>
             <div>
               <p><span className="font-medium">Total:</span> ${order.total.toFixed(2)}</p>
-              <p><span className="font-medium">Customer:</span> {order.user_profiles?.first_name} {order.user_profiles?.last_name}</p>
+              <p><span className="font-medium">Customer:</span> {customerInfo?.name || 'N/A'}</p>
+              <p><span className="font-medium">Customer Email:</span> {customerInfo?.email || 'N/A'}</p>
               <p><span className="font-medium">Customer ID:</span> {order.user_id}</p>
             </div>
           </div>
