@@ -1284,19 +1284,23 @@ export function useWishlist(userId: string | null) {
   }, [userId]);
 
   const addToWishlist = async (productId: string) => {
-    if (!userId) throw new Error('User must be logged in to add to wishlist');
+    if (!userId) {
+      setError('User must be logged in to add to wishlist');
+      return;
+    }
+    setError(null); // Clear previous errors
 
     try {
       // Check if item already exists in wishlist to prevent duplicates
-      const { data: existingItem, error: fetchError } = await supabase
+      const { data: existingItem, error: selectError } = await supabase
         .from('wishlist')
         .select('id')
         .eq('user_id', userId)
         .eq('product_id', productId)
-        .single();
+        .maybeSingle(); // Use maybeSingle() here
 
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
-        throw fetchError;
+      if (selectError) { // If maybeSingle() returns an error, it's a real query error
+        throw selectError;
       }
 
       if (existingItem) {
@@ -1304,7 +1308,8 @@ export function useWishlist(userId: string | null) {
         return; // Item already exists, do nothing
       }
 
-      const { data, error } = await supabase
+      // If no existing item, proceed with insert
+      const { data, error: insertError } = await supabase
         .from('wishlist')
         .insert({ user_id: userId, product_id: productId })
         .select(
@@ -1319,13 +1324,15 @@ export function useWishlist(userId: string | null) {
           )
         `
         )
-        .single();
+        .single(); // Use single() here as we expect one result after insert
 
-      if (error) throw error;
+      if (insertError) {
+        throw insertError;
+      }
 
       setWishlistItems((prev) => [...prev, data]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add to wishlist');
+    } catch (err: any) {
+      setError(err.message || 'Failed to add to wishlist');
     }
   };
 
