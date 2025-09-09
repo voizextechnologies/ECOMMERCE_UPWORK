@@ -1,37 +1,55 @@
-import React from 'react';
-
-const ideas = [
-  {
-    id: 'garden-makeover',
-    title: 'Garden Makeover Ideas',
-    description: 'Transform your outdoor space with these inspiring garden design ideas',
-    image: 'https://images.pexels.com/photos/1002703/pexels-photo-1002703.jpeg',
-    category: 'Garden & Outdoor'
-  },
-  {
-    id: 'storage-solutions',
-    title: 'Smart Storage Solutions',
-    description: 'Maximize your space with clever storage ideas for every room',
-    image: 'https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg',
-    category: 'Storage & Organization'
-  },
-  {
-    id: 'outdoor-living',
-    title: 'Outdoor Living Spaces',
-    description: 'Create the perfect outdoor entertaining area for family and friends',
-    image: 'https://images.pexels.com/photos/1105325/pexels-photo-1105325.jpeg',
-    category: 'Outdoor Living'
-  },
-  {
-    id: 'diy-projects',
-    title: 'Weekend DIY Projects',
-    description: 'Easy DIY projects you can complete in a weekend',
-    image: 'https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg',
-    category: 'DIY & Projects'
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAdminDIYArticles } from '../../hooks/useSupabase';
+import { DIYArticle } from '../../types'; // Assuming DIYArticle type is correctly defined
 
 export function InspiringIdeas() {
+  const { fetchAllDIYArticles, loading, error } = useAdminDIYArticles();
+  const [articles, setArticles] = useState<DIYArticle[]>([]);
+
+  useEffect(() => {
+    const getArticles = async () => {
+      const fetchedData = await fetchAllDIYArticles();
+      if (fetchedData) {
+        // Map fetched data from snake_case to camelCase as per DIYArticle interface
+        const mappedArticles: DIYArticle[] = fetchedData.map(article => ({
+          id: article.id,
+          slug: article.slug,
+          title: article.title,
+          excerpt: article.excerpt || '',
+          content: article.content || '',
+          featuredImage: article.featured_image || '', // Mapping featured_image to featuredImage
+          author: article.author || '',
+          publishedAt: article.published_at, // Mapping published_at to publishedAt
+          category: article.category || '',
+          tags: article.tags || [],
+        }));
+        setArticles(mappedArticles);
+      }
+    };
+    getArticles();
+  }, [fetchAllDIYArticles]); // Dependency array to re-run when fetchAllDIYArticles changes
+
+  if (loading) {
+    return (
+      <section className="py-12 bg-brown-100">
+        <div className="container mx-auto px-4 text-center text-brown-600">
+          Loading inspiring ideas...
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-12 bg-brown-100">
+        <div className="container mx-auto px-4 text-center text-red-500">
+          Error loading inspiring ideas: {error}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-12 bg-brown-100">
       <div className="container mx-auto px-4">
@@ -42,40 +60,41 @@ export function InspiringIdeas() {
               Inspiring ideas to update your space
             </h2>
           </div>
-          <button className="flex items-center px-4 py-2 border border-brown-300 rounded-lg hover:bg-brown-200 transition-colors">
+          <Link to="/diy-advice" className="flex items-center px-4 py-2 border border-brown-300 rounded-lg hover:bg-brown-200 transition-colors">
             <span className="text-brown-900 font-medium">All D.I.Y. Advice categories</span>
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {ideas.map((idea) => (
-            <div
-              key={idea.id}
+          {articles.map((article) => (
+            <Link
+              key={article.id}
+              to={`/diy-advice/${article.slug}`} // Link to a specific DIY article page
               className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
             >
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={idea.image}
-                  alt={idea.title}
+                  src={article.featuredImage}
+                  alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-3 left-3">
                   <span className="bg-brown-500 text-brown-900 text-xs font-medium px-2 py-1 rounded">
-                    {idea.category}
+                    {article.category}
                   </span>
                 </div>
               </div>
               
               <div className="p-4">
                 <h3 className="text-lg font-semibold text-brown-900 mb-2 group-hover:text-brown-700 transition-colors">
-                  {idea.title}
+                  {article.title}
                 </h3>
                 
                 <p className="text-sm text-brown-700 leading-relaxed">
-                  {idea.description}
+                  {article.excerpt}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
