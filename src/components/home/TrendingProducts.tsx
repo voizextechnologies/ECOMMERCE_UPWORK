@@ -2,6 +2,7 @@ import React from 'react';
 import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { useProducts } from '../../hooks/useSupabase'; // Import useProducts hook
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 export function TrendingProducts() {
   const { addToCart } = useApp(); // Get addToCart directly
@@ -57,27 +58,29 @@ export function TrendingProducts() {
               key={product.id}
               className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
             >
-              <div className="relative">
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                
-                <div className="absolute top-3 left-3 flex items-center space-x-2">
-                  <label className="flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only" />
-                    <div className="w-4 h-4 border border-brown-300 rounded bg-white flex items-center justify-center">
-                      <div className="w-2 h-2 bg-transparent"></div>
-                    </div>
-                    <span className="ml-2 text-sm text-brown-700">Compare</span>
-                  </label>
-                </div>
+              <Link to={`/products/${product.slug}`} className="block"> {/* Wrap image and title with Link */}
+                <div className="relative">
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  
+                  <div className="absolute top-3 left-3 flex items-center space-x-2">
+                    <label className="flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only" />
+                      <div className="w-4 h-4 border border-brown-300 rounded bg-white flex items-center justify-center">
+                        <div className="w-2 h-2 bg-transparent"></div>
+                      </div>
+                      <span className="ml-2 text-sm text-brown-700">Compare</span>
+                    </label>
+                  </div>
 
-                <button className="absolute top-3 right-3 p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition-all">
-                  <Heart className="w-4 h-4 text-brown-700 hover:text-red-500" />
-                </button>
-              </div>
+                  <button className="absolute top-3 right-3 p-2 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition-all">
+                    <Heart className="w-4 h-4 text-brown-700 hover:text-red-500" />
+                  </button>
+                </div>
+              </Link> {/* Close Link here */}
 
               <div className="p-4">
                 <div className="mb-2">
@@ -86,9 +89,11 @@ export function TrendingProducts() {
                   </span>
                 </div>
 
-                <h3 className="text-sm font-medium text-brown-900 mb-3 line-clamp-2 leading-tight">
-                  {product.name}
-                </h3>
+                <Link to={`/products/${product.slug}`}> {/* Wrap title with Link */}
+                  <h3 className="text-sm font-medium text-brown-900 mb-3 line-clamp-2 leading-tight">
+                    {product.name}
+                  </h3>
+                </Link> {/* Close Link here */}
 
                 <div className="flex items-center mb-3">
                   <div className="flex items-center">
