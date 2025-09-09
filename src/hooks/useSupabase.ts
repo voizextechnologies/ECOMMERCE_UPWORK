@@ -1169,3 +1169,73 @@ export function useAdminServices() {
     deleteService,
   };
 }
+
+// New hook for fetching a single DIY article by slug
+export function useDIYArticleBySlug(slug: string) {
+  const [article, setArticle] = useState<Tables['diy_articles']['Row'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchArticle() {
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error } = await supabase
+          .from('diy_articles')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (error) throw error;
+        setArticle(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'DIY article not found');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchArticle();
+  }, [slug]);
+
+  return { article, loading, error };
+}
+
+// New hook for fetching a single Service by slug
+export function useServiceBySlug(slug: string) {
+  const [service, setService] = useState<Tables['services']['Row'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchService() {
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (error) throw error;
+        setService(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Service not found');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchService();
+  }, [slug]);
+
+  return { service, loading, error };
+}
