@@ -485,23 +485,16 @@ export function useAdminProducts() {
     setLoading(true);
     setError(null);
     try {
-      console.log(`useAdminProducts: Attempting to update product ID: ${id}`);
       const { data, error } = await supabase
         .from('products')
         .update(productData)
         .eq('id', id)
         .select()
         .single();
-      if (error) {
-        console.error('useAdminProducts: Supabase update error:', error);
-        throw error;
-      }
-      console.log(`useAdminProducts: Product ${id} updated successfully.`);
+      if (error) throw error;
       return data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update product';
-      console.error('useAdminProducts: Error in updateProduct:', errorMessage, err);
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Failed to update product');
       return null;
     } finally {
       setLoading(false);
@@ -512,21 +505,14 @@ export function useAdminProducts() {
     setLoading(true);
     setError(null);
     try {
-      console.log(`useAdminProducts: Attempting to delete product ID: ${id}`);
       const { error } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
-      if (error) {
-        console.error('useAdminProducts: Supabase delete error:', error);
-        throw error;
-      }
-      console.log(`useAdminProducts: Product ${id} deleted successfully.`);
+      if (error) throw error;
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete product';
-      console.error('useAdminProducts: Error in deleteProduct:', errorMessage, err);
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Failed to delete product');
       return false;
     } finally {
       setLoading(false);
@@ -758,7 +744,6 @@ export function useAdminOrders() {
         .from('orders')
         .select(`
           *,
-          users!user_id (user_profiles!id(first_name, last_name)),
           shipping_address:addresses!orders_shipping_address_id_fkey(*),
           billing_address:addresses!orders_billing_address_id_fkey(*),
           order_items (
@@ -787,7 +772,6 @@ export function useAdminOrders() {
         .from('orders')
         .select(`
           *,
-          users!user_id (user_profiles!id(first_name, last_name)),
           shipping_address:addresses!orders_shipping_address_id_fkey(*),
           billing_address:addresses!orders_billing_address_id_fkey(*),
           order_items (
@@ -849,10 +833,7 @@ export function useAdminUsers() {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select(`
-          *,
-          users (email)
-        `)
+        .select(`*`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -871,10 +852,7 @@ export function useAdminUsers() {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select(`
-          *,
-          users (email)
-        `)
+        .select(`*`)
         .eq('id', id)
         .single();
       if (error) throw error;
