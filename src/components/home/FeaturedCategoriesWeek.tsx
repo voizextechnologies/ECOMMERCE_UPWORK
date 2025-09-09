@@ -1,42 +1,40 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Leaf, ChevronRight } from 'lucide-react';
-
-const featuredCategories = [
-  {
-    id: 'garden-supplies',
-    title: 'Garden Supplies & Maintenance',
-    description: 'Everything you need to keep your garden looking its best',
-    image: 'https://images.pexels.com/photos/1301856/pexels-photo-1301856.jpeg',
-    icon: Leaf,
-    link: '/category/garden-supplies'
-  },
-  {
-    id: 'landscaping',
-    title: 'Landscaping Supplies',
-    description: 'Transform your outdoor space with professional landscaping materials',
-    image: 'https://images.pexels.com/photos/1108572/pexels-photo-1108572.jpeg',
-    icon: Leaf,
-    link: '/category/landscaping'
-  },
-  {
-    id: 'plants',
-    title: 'Plants',
-    description: 'Beautiful plants and flowers to brighten up any space',
-    image: 'https://images.pexels.com/photos/1002703/pexels-photo-1002703.jpeg',
-    icon: Leaf,
-    link: '/category/plants'
-  },
-  {
-    id: 'bbqs',
-    title: 'BBQs',
-    description: 'Premium BBQs and outdoor cooking equipment',
-    image: 'https://images.pexels.com/photos/1105325/pexels-photo-1105325.jpeg',
-    icon: Leaf,
-    link: '/category/bbqs'
-  }
-];
+import { useDepartments } from '../../hooks/useSupabase'; // Import the hook
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 export function FeaturedCategoriesWeek() {
+  const { departments, loading, error } = useDepartments();
+
+  // Flatten all categories from all departments into a single array
+  const allCategories = useMemo(() => {
+    if (!departments) return [];
+    return departments.flatMap(department => department.categories || []);
+  }, [departments]);
+
+  // Select the first 4 categories to be "featured"
+  const featuredCategories = allCategories.slice(0, 4);
+
+  if (loading) {
+    return (
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4 text-center text-brown-600">
+          Loading featured categories...
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4 text-center text-red-500">
+          Error loading featured categories: {error}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
@@ -47,23 +45,26 @@ export function FeaturedCategoriesWeek() {
               Featured categories this week
             </h2>
           </div>
-          <button className="flex items-center px-4 py-2 border border-brown-300 rounded-lg hover:bg-brown-100 transition-colors">
+          <Link to="/shop" className="flex items-center px-4 py-2 border border-brown-300 rounded-lg hover:bg-brown-100 transition-colors">
             <span className="text-brown-900 font-medium">View all categories</span>
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {featuredCategories.map((category) => {
-            const Icon = category.icon;
+            // Using a static Leaf icon as per the original design,
+            // but you could extend categoryIconMap from ShopByCategory if needed.
+            const Icon = Leaf; 
             return (
-              <div
+              <Link
                 key={category.id}
+                to={`/shop?category=${category.slug}`} // Link to shop page with category slug
                 className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={category.image}
-                    alt={category.title}
+                    src={category.image || 'https://via.placeholder.com/400x300?text=No+Image'} // Fallback image
+                    alt={category.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
@@ -75,14 +76,14 @@ export function FeaturedCategoriesWeek() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-brown-900 mb-2 group-hover:text-brown-700 transition-colors">
-                    {category.title}
+                    {category.name}
                   </h3>
                   
-                  <p className="text-sm text-brown-700 leading-relaxed">
+                  <p className="text-sm text-brown-700 leading-relaxed line-clamp-2">
                     {category.description}
                   </p>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
