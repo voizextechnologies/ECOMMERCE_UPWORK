@@ -20,7 +20,7 @@ interface UseProductsOptions {
 export function useProducts(options?: UseProductsOptions) {
   const [products, setProducts] = useState<Tables['products']['Row'][]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = true);
   const [error, setError] = useState<string | null>(null);
 
   // Create a stable key for the options to prevent unnecessary re-renders
@@ -1238,4 +1238,118 @@ export function useServiceBySlug(slug: string) {
   }, [slug]);
 
   return { service, loading, error };
+}
+
+// New hook for user wishlist items
+export function useWishlist(userId: string | null) {
+  const [wishlistItems, setWishlistItems] = useState<Tables['wishlist']['Row'][]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchWishlistItems() {
+      if (!userId) {
+        setWishlistItems([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('wishlist')
+          .select(
+            `
+            *,
+            products (
+              id,
+              name,
+              price,
+              images,
+              slug
+            )
+          `
+          )
+          .eq('user_id', userId);
+
+        if (error) throw error;
+        setWishlistItems(data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch wishlist');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchWishlistItems();
+  }, [userId]);
+
+  const addToWishlist = async (productId: string) => {
+    if (!userId) throw new Error('User must be logged in to add to wishlist');
+
+    try {
+      // Check if item already exists in wishlist to prevent duplicates
+      const { data: existingItem, error: fetchError } = await supabase
+        .from('wishlist')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('product_id', productId)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
+        throw fetchError;
+      }
+
+      if (existingItem) {
+        console.log('Product already in wishlist:', productId);
+        return; // Item already exists, do nothing
+      }
+
+      const { data, error } = await supabase
+        .from('wishlist')
+        .insert({ user_id: userId, product_id: productId })
+        .select(
+          `
+          *,
+          products (
+            id,
+            name,
+            price,
+            images,
+            slug
+          )
+        `
+        )
+        .single();
+
+      if (error) throw error;
+
+      setWishlistItems((prev) => [...prev, data]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add to wishlist');
+    }
+  };
+
+  const removeFromWishlist = async (wishlistItemId: string) => {
+    try {
+      const { error } = await supabase
+        .from('wishlist')
+        .delete()
+        .eq('id', wishlistItemId)
+        .eq('user_id', userId); // Ensure user can only delete their own items
+
+      if (error) throw error;
+
+      setWishlistItems((prev) => prev.filter((item) => item.id !== wishlistItemId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove from wishlist');
+    }
+  };
+
+  return {
+    wishlistItems,
+    loading,
+    error,
+    addToWishlist,
+    removeFromWishlist,
+  };
 }
