@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Link } from 'react-router-dom'; // Import Link
 
 const slides = [
   {
@@ -83,9 +84,12 @@ export function HeroSlider() {
                 <p className="text-lg text-brown-200 mb-8">
                   {slide.description}
                 </p>
-                <Button size="lg" className="bg-brown-500 hover:bg-brown-700 text-white">
-                  {slide.cta}
-                </Button>
+                {/* Wrap the Button with Link */}
+                <Link to={slide.link}>
+                  <Button size="lg" className="bg-brown-500 hover:bg-brown-700 text-white">
+                    {slide.cta}
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -124,3 +128,4 @@ export function HeroSlider() {
     </section>
   );
 }
+
