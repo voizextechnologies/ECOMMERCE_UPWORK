@@ -8,10 +8,12 @@ import { AddressForm } from '../components/account/AddressForm';
 import { AddressList } from '../components/account/AddressList'; // Reusing AddressList for display
 import { MapPin, Package, CreditCard } from 'lucide-react';
 import { Address } from '../types';
+import { loadStripe } from '@stripe/stripe-js'; // ADD THIS LINE
+import { supabase } from '../lib/supabase'; // ADD THIS LINE
 
 export function CheckoutPage() {
-  const { cartItems, cartLoading, cartError, closeCart } = useApp();
-  const { addresses, loading: addressesLoading, error: addressesError } = useAddresses(useApp().state.user?.id || null);
+  const { cartItems, cartLoading, cartError, closeCart, state: { user } } = useApp(); // Destructure user from state
+  const { addresses, loading: addressesLoading, error: addressesError } = useAddresses(user?.id || null); // Use user.id
   const navigate = useNavigate();
 
   const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<string | null>(null);
@@ -19,6 +21,7 @@ export function CheckoutPage() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [formAddressType, setFormAddressType] = useState<'shipping' | 'billing'>('shipping');
+  const [processingCheckout, setProcessingCheckout] = useState(false); // New state for checkout processing
 
   useEffect(() => {
     if (!cartLoading && cartItems.length === 0) {
@@ -70,55 +73,101 @@ export function CheckoutPage() {
       alert('Please select both shipping and billing addresses.');
       return;
     }
+    if (!user?.id) {
+      alert('User not logged in. Please log in to proceed.');
+      return;
+    }
+    if (cartItems.length === 0) {
+      alert('Your cart is empty. Please add items to your cart.');
+      navigate('/cart');
+      return;
+    }
 
-    // Here you would typically initiate a Stripe Checkout session
-    // This involves making an API call to your Supabase Edge Function
-    // The Edge Function would then create a Stripe Checkout session and return its ID
-    // You would then redirect the user to Stripe's hosted checkout page.
+    setProcessingCheckout(true);
 
-    alert('Proceeding to payment (Stripe integration placeholder).');
-    console.log('Selected Shipping Address ID:', selectedShippingAddressId);
-    console.log('Selected Billing Address ID:', selectedBillingAddressId);
-    console.log('Cart Items:', cartItems);
-
-    // Example of what the Stripe integration might look like (conceptual):
-    /*
     try {
-      const response = await fetch('/api/create-stripe-checkout-session', {
+      // 1. Create a new order in Supabase with 'pending' status
+      const { data: newOrder, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          order_number: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Generate a simple order number
+          status: 'pending',
+          total: total,
+          shipping_address_id: selectedShippingAddressId,
+          billing_address_id: selectedBillingAddressId,
+          delivery_method: 'shipping', // Assuming 'shipping' for now
+        })
+        .select('id')
+        .single();
+
+      if (orderError || !newOrder) {
+        throw new Error(`Failed to create order: ${orderError?.message}`);
+      }
+
+      // 2. Add order items
+      const orderItemsToInsert = cartItems.map(item => ({
+        order_id: newOrder.id,
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+        price: item.product_variants?.price || item.products.price,
+      }));
+
+      const { error: orderItemsError } = await supabase
+        .from('order_items')
+        .insert(orderItemsToInsert);
+
+      if (orderItemsError) {
+        throw new Error(`Failed to create order items: ${orderItemsError.message}`);
+      }
+
+      // 3. Call Supabase Edge Function to create Stripe Checkout Session
+      const response = await fetch('/functions/v1/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}` // Pass user's JWT
+        },
         body: JSON.stringify({
-          cartItems: cartItems.map(item => ({
-            productId: item.product_id,
-            variantId: item.variant_id,
-            quantity: item.quantity,
-            price: item.product_variants?.price || item.products.price,
-            name: item.products.name,
-          })),
-          shippingAddressId: selectedShippingAddressId,
-          billingAddressId: selectedBillingAddressId,
-          userId: useApp().state.user?.id,
+          orderId: newOrder.id,
         }),
       });
-      const { sessionId } = await response.json();
-      // Redirect to Stripe Checkout
-      const stripe = await loadStripe('YOUR_STRIPE_PUBLISHABLE_KEY');
-      await stripe.redirectToCheckout({ sessionId });
-    } catch (error) {
-      console.error('Error creating Stripe Checkout session:', error);
-      alert('Failed to initiate payment. Please try again.');
-    }
-    */
 
-    // For now, simulate success and navigate to confirmation page
-    navigate('/order-confirmation');
-    closeCart(); // Close the mini-cart after proceeding to checkout
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to create Stripe Checkout session: ${errorData.error}`);
+      }
+
+      const { sessionId } = await response.json();
+
+      // 4. Redirect to Stripe Checkout
+      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+      if (stripe) {
+        const { error: stripeRedirectError } = await stripe.redirectToCheckout({ sessionId });
+        if (stripeRedirectError) {
+          throw new Error(`Stripe redirect error: ${stripeRedirectError.message}`);
+        }
+      } else {
+        throw new Error('Stripe.js failed to load.');
+      }
+
+      // The closeCart() will be handled by the webhook after successful payment
+      // navigate('/order-confirmation'); // This will be handled by Stripe redirect
+    } catch (error: any) {
+      console.error('Checkout process failed:', error);
+      alert(`Failed to proceed to payment: ${error.message}`);
+      // Optionally, you might want to delete the pending order if the checkout fails before redirect
+      // await supabase.from('orders').delete().eq('id', newOrder.id);
+    } finally {
+      setProcessingCheckout(false);
+    }
   };
 
-  if (cartLoading || addressesLoading) {
+  if (cartLoading || addressesLoading || processingCheckout) {
     return (
       <div className="min-h-screen flex items-center justify-center text-brown-600">
-        Loading checkout details...
+        {processingCheckout ? 'Processing checkout...' : 'Loading checkout details...'}
       </div>
     );
   }
@@ -277,10 +326,10 @@ export function CheckoutPage() {
                   className="w-full mt-6"
                   size="lg"
                   onClick={handleProceedToPayment}
-                  disabled={!selectedShippingAddressId || !selectedBillingAddressId}
+                  disabled={!selectedShippingAddressId || !selectedBillingAddressId || processingCheckout}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
-                  Proceed to Payment
+                  {processingCheckout ? 'Processing...' : 'Proceed to Payment'}
                 </Button>
               </div>
             )}
