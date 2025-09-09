@@ -129,7 +129,7 @@ export function Header() {
               Home
             </Link>
             <Link to="/shop" className="text-brown-100 hover:text-brown-300 transition-colors">
-              Our Range
+              Shop
             </Link>
             <Link to="/services" className="text-brown-100 hover:text-brown-300 transition-colors">
               Services
