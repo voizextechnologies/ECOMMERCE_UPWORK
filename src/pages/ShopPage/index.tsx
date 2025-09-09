@@ -11,6 +11,7 @@ export function ShopPage() {
   const itemsPerPage = 9;
   
   const categorySlug = searchParams.get('category') || undefined;
+  const departmentSlug = searchParams.get('department') || undefined; // New line
   const searchQuery = searchParams.get('search') || undefined;
   const minPrice = Number(searchParams.get('minPrice')) || undefined;
   const maxPrice = Number(searchParams.get('maxPrice')) || undefined;
@@ -20,6 +21,7 @@ export function ShopPage() {
 
   const { totalCount } = useProducts({
     categorySlug,
+    departmentSlug, // Pass new departmentSlug
     searchQuery,
     minPrice,
     maxPrice,
