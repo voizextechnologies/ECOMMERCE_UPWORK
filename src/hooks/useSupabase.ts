@@ -1361,3 +1361,58 @@ export function useWishlist(userId: string | null) {
     removeFromWishlist,
   };
 }
+
+// New hook for fetching user orders
+export function useUserOrders(userId: string | null) {
+  const [orders, setOrders] = useState<Tables['orders']['Row'][]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchUserOrders() {
+      if (!userId) {
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select(
+            `
+            *,
+            order_items (
+              *,
+              products (
+                id,
+                name,
+                images,
+                slug
+              ),
+              product_variants (
+                id,
+                name,
+                price,
+                attributes
+              )
+            )
+          `
+          )
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setOrders(data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUserOrders();
+  }, [userId]);
+
+  return { orders, loading, error };
+}
