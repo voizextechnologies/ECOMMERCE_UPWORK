@@ -1,0 +1,122 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { useAdminUsers } from '../hooks/useSupabase';
+import { Edit } from 'lucide-react';
+import { supabase } from '../lib/supabase'; // Import supabase client
+
+// Define a type for the user data with combined email
+interface UserProfileWithEmail {
+  id: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  created_at: string;
+  email: string; // Added email field
+}
+
+export function AdminUserListPage() {
+  const { loading, error, fetchAllUserProfiles } = useAdminUsers();
+  const [users, setUsers] = useState<UserProfileWithEmail[]>([]);
+  const [refresh, setRefresh] = useState(false);
+  const [processingUsers, setProcessingUsers] = useState(true); // New state for processing
+
+  useEffect(() => {
+    const getUsers = async () => {
+      setProcessingUsers(true); // Start processing
+      const fetchedProfiles = await fetchAllUserProfiles();
+
+      if (fetchedProfiles) {
+        const profilesWithEmails: UserProfileWithEmail[] = await Promise.all(
+          fetchedProfiles.map(async (profile: any) => {
+            let email = 'N/A';
+            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(profile.id);
+            if (userData?.user) {
+              email = userData.user.email || 'N/A';
+            } else if (userError) {
+              console.error(`Error fetching email for user ${profile.id}:`, userError);
+            }
+            return {
+              ...profile,
+              email: email,
+            };
+          })
+        );
+        setUsers(profilesWithEmails);
+      }
+      setProcessingUsers(false); // End processing
+    };
+    getUsers();
+  }, [refresh, fetchAllUserProfiles]);
+
+  if (loading || processingUsers) {
+    return <div className="text-center py-8">Loading users...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-brown-900">Users</h2>
+      </div>
+
+      {users.length === 0 ? (
+        <div className="text-center text-gray-600 py-10">No users found.</div>
+      ) : (
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created At
+                </th>
+                <th scope="col" className="relative px-6 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{user.first_name} {user.last_name}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user.email || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <Link to={`/admin/users/${user.id}/edit`} className="text-brown-600 hover:text-brown-900">
+                      <Edit className="w-5 h-5 inline" /> Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
