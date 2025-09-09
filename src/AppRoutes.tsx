@@ -29,6 +29,7 @@ import { CartPage } from './pages/CartPage';
 import { LoginPage } from './pages/LoginPage';
 import { CheckoutPage } from './pages/CheckoutPage'; // Import CheckoutPage
 import { OrderConfirmationPage } from './pages/OrderConfirmationPage'; // Import OrderConfirmationPage
+import { WishlistPage } from './pages/WishlistPage'; // Import WishlistPage
 
 // Import new admin pages for Categories & Departments
 import { AdminCategoryDepartmentListPage } from './pages/AdminCategoryDepartmentListPage';
@@ -134,6 +135,7 @@ export function AppRoutes() {
           <Route path="/services/:slug" element={<ServiceDetailPage />} /> {/* New Service Detail Page Route */}
           <Route path="/diy-advice" element={<DIYAdvicePage />} />
           <Route path="/diy-advice/:slug" element={<DIYArticleDetailPage />} /> {/* New DIY Article Detail Page Route */}
+          <Route path="/wishlist" element={<WishlistPage />} /> {/* New Wishlist Page Route */}
 
           {/* Protected User Routes */}
           <Route
@@ -208,3 +210,4 @@ export function AppRoutes() {
     </div>
   );
 }
+
