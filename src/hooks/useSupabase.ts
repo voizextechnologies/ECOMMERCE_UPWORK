@@ -517,7 +517,11 @@ export function useAdminProducts() {
         .from('products')
         .delete()
         .eq('id', id);
-      if (error) throw error;
+      if (error) {
+        console.error('useAdminProducts: Supabase delete error:', error);
+        throw error;
+      }
+      console.log(`useAdminProducts: Product ${id} deleted successfully.`);
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete product';
@@ -754,7 +758,7 @@ export function useAdminOrders() {
         .from('orders')
         .select(`
           *,
-          users!user_id (user_profiles(first_name, last_name)),
+          users!user_id (user_profiles!id(first_name, last_name)),
           shipping_address:addresses!orders_shipping_address_id_fkey(*),
           billing_address:addresses!orders_billing_address_id_fkey(*),
           order_items (
@@ -783,7 +787,7 @@ export function useAdminOrders() {
         .from('orders')
         .select(`
           *,
-          users!user_id (user_profiles(first_name, last_name)),
+          users!user_id (user_profiles!id(first_name, last_name)),
           shipping_address:addresses!orders_shipping_address_id_fkey(*),
           billing_address:addresses!orders_billing_address_id_fkey(*),
           order_items (
