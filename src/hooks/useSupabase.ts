@@ -1,5 +1,5 @@
 // src/hooks/useSupabase.ts
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/supabase';
 
@@ -305,13 +305,6 @@ export function useCart(userId: string | null) {
   };
 }
 
-// src/hooks/useSupabase.ts
-import { useEffect, useState, useCallback } from 'react'; // Import useCallback
-import { supabase } from '../lib/supabase';
-import type { Database } from '../lib/supabase';
-
-// ... (other hooks like useProducts, useDepartments, useProduct, useCart remain unchanged)
-
 // Hook for user addresses
 export function useAddresses(userId: string | null) {
   const [addresses, setAddresses] = useState<Tables['addresses']['Row'][]>([]);
@@ -397,7 +390,6 @@ export function useAddresses(userId: string | null) {
   };
 }
 
-// Admin-specific product CRUD operations
 // Admin-specific product CRUD operations
 export function useAdminProducts() {
   const [loading, setLoading] = useState(false);
@@ -549,5 +541,599 @@ export function useAdminProducts() {
     addProduct,
     updateProduct,
     deleteProduct,
+  };
+}
+
+// Admin-specific Categories & Departments CRUD operations
+export function useAdminCategoriesDepartments() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllDepartmentsWithCategories = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select(`
+          *,
+          categories (
+            id,
+            slug,
+            name,
+            description,
+            image,
+            product_count
+          )
+        `)
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch departments and categories');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDepartmentById = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const addDepartment = useCallback(async (departmentData: Tables['departments']['Insert']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .insert(departmentData)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateDepartment = useCallback(async (id: string, departmentData: Tables['departments']['Update']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .update(departmentData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteDepartment = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('departments')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete department');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchCategoryById = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch category');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const addCategory = useCallback(async (categoryData: Tables['categories']['Insert']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert(categoryData)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add category');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateCategory = useCallback(async (id: string, categoryData: Tables['categories']['Update']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .update(categoryData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update category');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteCategory = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete category');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    loading,
+    error,
+    fetchAllDepartmentsWithCategories,
+    fetchDepartmentById,
+    addDepartment,
+    updateDepartment,
+    deleteDepartment,
+    fetchCategoryById,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+  };
+}
+
+// Admin-specific Orders CRUD operations
+export function useAdminOrders() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllOrders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          user_profiles (first_name, last_name),
+          shipping_address:addresses!orders_shipping_address_id_fkey(*),
+          billing_address:addresses!orders_billing_address_id_fkey(*),
+          order_items (
+            *,
+            products (name, images),
+            product_variants (name)
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchOrderById = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          user_profiles (first_name, last_name),
+          shipping_address:addresses!orders_shipping_address_id_fkey(*),
+          billing_address:addresses!orders_billing_address_id_fkey(*),
+          order_items (
+            *,
+            products (name, images),
+            product_variants (name)
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch order');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateOrderStatus = useCallback(async (id: string, status: Tables['orders']['Update']['status']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update order status');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    loading,
+    error,
+    fetchAllOrders,
+    fetchOrderById,
+    updateOrderStatus,
+  };
+}
+
+// Admin-specific Users CRUD operations
+export function useAdminUsers() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllUserProfiles = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select(`
+          *,
+          users:id (email)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch user profiles');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchUserProfileById = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select(`
+          *,
+          users:id (email)
+        `)
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch user profile');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateUserProfile = useCallback(async (id: string, profileData: Tables['user_profiles']['Update']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update(profileData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update user profile');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    loading,
+    error,
+    fetchAllUserProfiles,
+    fetchUserProfileById,
+    updateUserProfile,
+  };
+}
+
+// Admin-specific DIY Articles CRUD operations
+export function useAdminDIYArticles() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllDIYArticles = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('diy_articles')
+        .select('*')
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch DIY articles');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDIYArticleById = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('diy_articles')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch DIY article');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const addDIYArticle = useCallback(async (articleData: Tables['diy_articles']['Insert']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('diy_articles')
+        .insert(articleData)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add DIY article');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateDIYArticle = useCallback(async (id: string, articleData: Tables['diy_articles']['Update']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('diy_articles')
+        .update(articleData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update DIY article');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteDIYArticle = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('diy_articles')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete DIY article');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    loading,
+    error,
+    fetchAllDIYArticles,
+    fetchDIYArticleById,
+    addDIYArticle,
+    updateDIYArticle,
+    deleteDIYArticle,
+  };
+}
+
+// Admin-specific Services CRUD operations
+export function useAdminServices() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllServices = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch services');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchServiceById = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch service');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const addService = useCallback(async (serviceData: Tables['services']['Insert']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .insert(serviceData)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add service');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateService = useCallback(async (id: string, serviceData: Tables['services']['Update']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .update(serviceData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update service');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteService = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('services')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete service');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    loading,
+    error,
+    fetchAllServices,
+    fetchServiceById,
+    addService,
+    updateService,
+    deleteService,
   };
 }
