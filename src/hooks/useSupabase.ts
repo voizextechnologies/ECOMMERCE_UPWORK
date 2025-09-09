@@ -20,7 +20,7 @@ interface UseProductsOptions {
 export function useProducts(options?: UseProductsOptions) {
   const [products, setProducts] = useState<Tables['products']['Row'][]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = true);
+  const [loading, setLoading] = true;
   const [error, setError] = useState<string | null>(null);
 
   // Create a stable key for the options to prevent unnecessary re-renders
