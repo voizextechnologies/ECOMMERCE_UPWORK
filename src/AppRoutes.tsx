@@ -58,6 +58,8 @@ import { AdminEditServicePage } from './pages/AdminEditServicePage';
 // Import new public pages for Services and DIY Advice
 import { ServicesPage } from './pages/ServicesPage';
 import { DIYAdvicePage } from './pages/DIYAdvicePage';
+import { DIYArticleDetailPage } from './pages/DIYArticleDetailPage'; // New import
+import { ServiceDetailPage } from './pages/ServiceDetailPage'; // New import
 
 
 // Placeholder for Admin Dashboard Page
@@ -97,7 +99,7 @@ function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   }
 
   console.log('ProtectedRoute: User is authenticated and authorized. Rendering children.');
-  return <>{children}</>;
+  return <>{children}</ProtectedRoute>;
 }
 
 export function AppRoutes() {
@@ -128,8 +130,10 @@ export function AppRoutes() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/services" element={<ServicesPage />} /> {/* New Services Page Route */}
-          <Route path="/diy-advice" element={<DIYAdvicePage />} /> {/* New DIY Advice Page Route */}
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/:slug" element={<ServiceDetailPage />} /> {/* New Service Detail Page Route */}
+          <Route path="/diy-advice" element={<DIYAdvicePage />} />
+          <Route path="/diy-advice/:slug" element={<DIYArticleDetailPage />} /> {/* New DIY Article Detail Page Route */}
 
           {/* Protected User Routes */}
           <Route
