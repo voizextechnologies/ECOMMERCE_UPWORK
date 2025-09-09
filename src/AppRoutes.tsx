@@ -30,6 +30,32 @@ import { LoginPage } from './pages/LoginPage';
 import { CheckoutPage } from './pages/CheckoutPage'; // Import CheckoutPage
 import { OrderConfirmationPage } from './pages/OrderConfirmationPage'; // Import OrderConfirmationPage
 
+// Import new admin pages for Categories & Departments
+import { AdminCategoryDepartmentListPage } from './pages/AdminCategoryDepartmentListPage';
+import { AdminAddDepartmentPage } from './pages/AdminAddDepartmentPage';
+import { AdminEditDepartmentPage } from './pages/AdminEditDepartmentPage';
+import { AdminAddCategoryPage } from './pages/AdminAddCategoryPage';
+import { AdminEditCategoryPage } from './pages/AdminEditCategoryPage';
+
+// Import new admin pages for Orders
+import { AdminOrderListPage } from './pages/AdminOrderListPage';
+import { AdminOrderDetailPage } from './pages/AdminOrderDetailPage';
+
+// Import new admin pages for Users
+import { AdminUserListPage } from './pages/AdminUserListPage';
+import { AdminEditUserPage } from './pages/AdminEditUserPage';
+
+// Import new admin pages for DIY Articles
+import { AdminDIYArticleListPage } from './pages/AdminDIYArticleListPage';
+import { AdminAddDIYArticlePage } from './pages/AdminAddDIYArticlePage';
+import { AdminEditDIYArticlePage } from './pages/AdminEditDIYArticlePage';
+
+// Import new admin pages for Services
+import { AdminServiceListPage } from './pages/AdminServiceListPage';
+import { AdminAddServicePage } from './pages/AdminAddServicePage';
+import { AdminEditServicePage } from './pages/AdminEditServicePage';
+
+
 // Placeholder for Admin Dashboard Page
 function AdminDashboardPage() {
   return (
@@ -134,12 +160,32 @@ export function AppRoutes() {
                     <Route path="products" element={<AdminProductListPage />} />
                     <Route path="products/new" element={<AdminAddProductPage />} />
                     <Route path="products/:id/edit" element={<AdminEditProductPage />} />
-                    {/* Placeholder for future admin routes */}
-                    {/* <Route path="categories" element={<AdminCategoryListPage />} */}
-                    {/* <Route path="orders" element={<AdminOrderListPage />} /> */}
-                    {/* <Route path="users" element={<AdminUserListPage />} /> */}
-                    {/* <Route path="articles" element={<AdminDIYArticleListPage />} /> */}
-                    {/* <Route path="services" element={<AdminServiceListPage />} /> */}
+                    
+                    {/* Admin Categories & Departments Routes */}
+                    <Route path="categories" element={<AdminCategoryDepartmentListPage />} />
+                    <Route path="categories/new-department" element={<AdminAddDepartmentPage />} />
+                    <Route path="categories/departments/:id/edit" element={<AdminEditDepartmentPage />} />
+                    <Route path="categories/new-category" element={<AdminAddCategoryPage />} />
+                    <Route path="categories/categories/:id/edit" element={<AdminEditCategoryPage />} />
+
+                    {/* Admin Orders Routes */}
+                    <Route path="orders" element={<AdminOrderListPage />} />
+                    <Route path="orders/:id" element={<AdminOrderDetailPage />} />
+
+                    {/* Admin Users Routes */}
+                    <Route path="users" element={<AdminUserListPage />} />
+                    <Route path="users/:id/edit" element={<AdminEditUserPage />} />
+
+                    {/* Admin DIY Articles Routes */}
+                    <Route path="articles" element={<AdminDIYArticleListPage />} />
+                    <Route path="articles/new" element={<AdminAddDIYArticlePage />} />
+                    <Route path="articles/:id/edit" element={<AdminEditDIYArticlePage />} />
+
+                    {/* Admin Services Routes */}
+                    <Route path="services" element={<AdminServiceListPage />} />
+                    <Route path="services/new" element={<AdminAddServicePage />} />
+                    <Route path="services/:id/edit" element={<AdminEditServicePage />} />
+
                   </Routes>
                 </AdminLayout>
               </ProtectedRoute>
