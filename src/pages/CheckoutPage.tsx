@@ -8,8 +8,8 @@ import { AddressForm } from '../components/account/AddressForm';
 import { AddressList } from '../components/account/AddressList'; // Reusing AddressList for display
 import { MapPin, Package, CreditCard } from 'lucide-react';
 import { Address } from '../types';
-import { loadStripe } from '@stripe/stripe-js'; // ADD THIS LINE
-import { supabase } from '../lib/supabase'; // ADD THIS LINE
+import { loadStripe } from '@stripe/stripe-js';
+import { supabase } from '../lib/supabase';
 
 export function CheckoutPage() {
   const { cartItems, cartLoading, cartError, closeCart, state: { user } } = useApp(); // Destructure user from state
@@ -123,11 +123,11 @@ export function CheckoutPage() {
       }
 
       // 3. Call Supabase Edge Function to create Stripe Checkout Session
-      const response = await fetch('/functions/v1/create-checkout-session', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await supabase.auth.getSession().then(s => s.data.session?.access_token)}` // Pass user's JWT
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({
           orderId: newOrder.id,
@@ -152,13 +152,9 @@ export function CheckoutPage() {
         throw new Error('Stripe.js failed to load.');
       }
 
-      // The closeCart() will be handled by the webhook after successful payment
-      // navigate('/order-confirmation'); // This will be handled by Stripe redirect
     } catch (error: any) {
       console.error('Checkout process failed:', error);
       alert(`Failed to proceed to payment: ${error.message}`);
-      // Optionally, you might want to delete the pending order if the checkout fails before redirect
-      // await supabase.from('orders').delete().eq('id', newOrder.id);
     } finally {
       setProcessingCheckout(false);
     }

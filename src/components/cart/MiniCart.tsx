@@ -121,9 +121,11 @@ export function MiniCart() {
                     View Cart
                   </Button>
                 </Link>
-                <Button variant="secondary" className="w-full" size="lg">
-                  Checkout
-                </Button>
+                <Link to="/checkout">
+                  <Button variant="secondary" className="w-full" size="lg" onClick={closeCart}>
+                    Checkout
+                  </Button>
+                </Link>
               </div>
             </div>
           )}
