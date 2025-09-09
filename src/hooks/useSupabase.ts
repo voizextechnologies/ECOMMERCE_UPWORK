@@ -7,6 +7,7 @@ type Tables = Database['public']['Tables'];
 
 interface UseProductsOptions {
   categorySlug?: string;
+  departmentSlug?: string; // Add this
   searchQuery?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -30,6 +31,56 @@ export function useProducts(options?: UseProductsOptions) {
       setError(null);
 
       try {
+        let categoryIdToFilter: string | null = null;
+        let departmentIdToFilter: string | null = null;
+
+        // 1. Fetch category ID if categorySlug is provided
+        if (options?.categorySlug) {
+          const { data: categoryData, error: categoryError } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('slug', options.categorySlug)
+            .single();
+
+          if (categoryError) {
+            console.error('Error fetching category ID by slug:', categoryError);
+            throw new Error('Failed to find category.');
+          }
+          if (categoryData) {
+            categoryIdToFilter = categoryData.id;
+          } else {
+            // If categorySlug is provided but no category found, return empty products
+            setProducts([]);
+            setTotalCount(0);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2. Fetch department ID if departmentSlug is provided
+        if (options?.departmentSlug) {
+          const { data: departmentData, error: departmentError } = await supabase
+            .from('departments')
+            .select('id')
+            .eq('slug', options.departmentSlug)
+            .single();
+
+          if (departmentError) {
+            console.error('Error fetching department ID by slug:', departmentError);
+            throw new Error('Failed to find department.');
+          }
+          if (departmentData) {
+            departmentIdToFilter = departmentData.id;
+          } else {
+            // If departmentSlug is provided but no department found, return empty products
+            setProducts([]);
+            setTotalCount(0);
+            setLoading(false);
+            return;
+          }
+        }
+
+
         let query = supabase
           .from('products')
           .select(
@@ -50,8 +101,11 @@ export function useProducts(options?: UseProductsOptions) {
           );
 
         // Apply filters
-        if (options?.categorySlug) {
-          query = query.eq('categories.slug', options.categorySlug);
+        if (categoryIdToFilter) {
+          query = query.eq('category_id', categoryIdToFilter);
+        }
+        if (departmentIdToFilter) {
+          query = query.eq('department_id', departmentIdToFilter);
         }
         if (options?.brand) {
           query = query.ilike('brand', `%${options.brand}%`);
