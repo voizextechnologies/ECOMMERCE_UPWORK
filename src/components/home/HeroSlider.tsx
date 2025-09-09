@@ -29,7 +29,7 @@ const slides = [
     description: 'Transform your outdoor space with our garden range',
     image: 'https://images.pexels.com/photos/296230/pexels-photo-296230.jpeg',
     cta: 'Explore Garden Range',
-    link: '/our-range/garden-outdoor'
+    link: '/our-range'
   }
 ];
 
