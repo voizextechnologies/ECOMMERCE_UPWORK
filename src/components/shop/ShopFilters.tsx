@@ -19,6 +19,7 @@ export function ShopFilters() {
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
+    department: true, // New section
     category: true,
     price: true,
     brand: true,
@@ -90,7 +91,7 @@ export function ShopFilters() {
     setSearchParams(newSearchParams);
   };
 
-  const hasActiveFilters = minPrice > 0 || maxPrice < 1000 || selectedBrands.length > 0 || searchParams.get('category');
+  const hasActiveFilters = minPrice > 0 || maxPrice < 1000 || selectedBrands.length > 0 || searchParams.get('category') || searchParams.get('department'); // Updated
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-brown-100 overflow-hidden">
@@ -114,6 +115,79 @@ export function ShopFilters() {
       </div>
 
       <div className="p-6 space-y-6">
+        {/* Department Filter */}
+        <div className="border-b border-brown-100 pb-6">
+          <button
+            onClick={() => toggleSection('department')}
+            className="flex items-center justify-between w-full text-left mb-4 group"
+          >
+            <h3 className="text-lg font-semibold text-brown-900 group-hover:text-brown-700 transition-colors">
+              Department
+            </h3>
+            {expandedSections.department ? (
+              <ChevronUp className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            )}
+          </button>
+          
+          {expandedSections.department && (
+            <div className="space-y-2">
+              {departmentsLoading ? (
+                <div className="animate-pulse space-y-2">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-4 bg-brown-100 rounded"></div>
+                  ))}
+                </div>
+              ) : departmentsError ? (
+                <p className="text-red-500 text-sm">Error loading departments</p>
+              ) : (
+                <>
+                  <div className="mb-3">
+                    <Link
+                      to="/shop"
+                      className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        !searchParams.get('department') && !searchParams.get('category')
+                          ? 'bg-brown-900 text-white shadow-md'
+                          : 'text-brown-700 hover:bg-brown-50 hover:text-brown-900'
+                      }`}
+                      onClick={() => {
+                        const newSearchParams = new URLSearchParams(searchParams.toString());
+                        newSearchParams.delete('department');
+                        newSearchParams.delete('category'); // Clear category when "All Departments" is selected
+                        newSearchParams.delete('page');
+                        setSearchParams(newSearchParams);
+                      }}
+                    >
+                      All Departments
+                    </Link>
+                  </div>
+                  {departments.map((department) => (
+                    <Link
+                      key={department.id}
+                      to={`/shop?department=${department.slug}`}
+                      className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                        searchParams.get('department') === department.slug
+                          ? 'bg-brown-100 text-brown-900 font-medium border-l-4 border-brown-500'
+                          : 'text-brown-600 hover:bg-brown-50 hover:text-brown-800'
+                      }`}
+                      onClick={() => {
+                        const newSearchParams = new URLSearchParams(searchParams.toString());
+                        newSearchParams.set('department', department.slug);
+                        newSearchParams.delete('category'); // Clear category when a department is selected
+                        newSearchParams.delete('page');
+                        setSearchParams(newSearchParams);
+                      }}
+                    >
+                      {department.name}
+                    </Link>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Category Filter */}
         <div className="border-b border-brown-100 pb-6">
           <button
@@ -146,13 +220,14 @@ export function ShopFilters() {
                     <Link
                       to="/shop"
                       className={`block px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        !searchParams.get('category')
+                        !searchParams.get('category') && !searchParams.get('department')
                           ? 'bg-brown-900 text-white shadow-md'
                           : 'text-brown-700 hover:bg-brown-50 hover:text-brown-900'
                       }`}
                       onClick={() => {
                         const newSearchParams = new URLSearchParams(searchParams.toString());
                         newSearchParams.delete('category');
+                        newSearchParams.delete('department'); // Clear department when "All Categories" is selected
                         newSearchParams.delete('page');
                         setSearchParams(newSearchParams);
                       }}
@@ -174,6 +249,7 @@ export function ShopFilters() {
                           onClick={() => {
                             const newSearchParams = new URLSearchParams(searchParams.toString());
                             newSearchParams.set('category', category.slug);
+                            newSearchParams.delete('department'); // Clear department when a category is selected
                             newSearchParams.delete('page');
                             setSearchParams(newSearchParams);
                           }}
