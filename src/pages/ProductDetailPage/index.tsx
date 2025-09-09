@@ -8,12 +8,12 @@ import { useApp } from '../../contexts/AppContext';
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { product, loading, error } = useProduct(slug || '');
-  const { addToCart, addToWishlist, state: { user }, wishlistItems } = useApp(); // Get wishlistItems
+  const { addToCart, addToWishlist, removeFromWishlist, state: { user }, wishlistItems } = useApp(); // Get wishlistItems and removeFromWishlist
   const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
 
-  // Check if the current product is in the wishlist
-  const isProductInWishlist = wishlistItems.some(item => item.product_id === product?.id);
+  // Check if the current product is in the wishlist and get the item itself
+  const foundWishlistItem = wishlistItems.find(item => item.product_id === product?.id);
 
   if (loading) {
     return (
@@ -42,8 +42,13 @@ export function ProductDetailPage() {
       alert('Please log in to add items to your wishlist.');
       return;
     }
-    await addToWishlist(product.id);
-    // No need for alert here, the icon change will be the feedback
+    if (foundWishlistItem) {
+      // If already in wishlist, remove it
+      await removeFromWishlist(foundWishlistItem.id);
+    } else {
+      // If not in wishlist, add it
+      await addToWishlist(product.id);
+    }
   };
 
   const handleQuantityChange = (amount: number) => {
@@ -171,9 +176,9 @@ export function ProductDetailPage() {
                 variant="outline"
                 size="lg"
                 onClick={handleAddToWishlist}
-                className={isProductInWishlist ? 'bg-red-500 text-white hover:bg-red-600 border-red-500 hover:border-red-600' : ''}
+                className={foundWishlistItem ? 'bg-red-500 text-white hover:bg-red-600 border-red-500 hover:border-red-600' : ''}
               >
-                <Heart className={`w-5 h-5 ${isProductInWishlist ? 'fill-current' : ''}`} />
+                <Heart className={`w-5 h-5 ${foundWishlistItem ? 'fill-current' : ''}`} />
               </Button>
             </div>
 
