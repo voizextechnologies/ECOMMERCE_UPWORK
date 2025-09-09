@@ -11,7 +11,7 @@ const slides = [
     description: 'Stock up on concrete, timber, and hardware essentials',
     image: 'https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg',
     cta: 'Shop Building Materials',
-    link: '/our-range/building-hardware'
+    link: '/our-range'
   },
   {
     id: 2,
