@@ -2,24 +2,54 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAdminUsers } from '../hooks/useSupabase';
-import { User, Edit } from 'lucide-react';
+import { Edit } from 'lucide-react';
+import { supabase } from '../lib/supabase'; // Import supabase client
+
+// Define a type for the user data with combined email
+interface UserProfileWithEmail {
+  id: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  created_at: string;
+  email: string; // Added email field
+}
 
 export function AdminUserListPage() {
   const { loading, error, fetchAllUserProfiles } = useAdminUsers();
-  const [users, setUsers] = useState<any[]>([]); // Use 'any' for now due to joined types
+  const [users, setUsers] = useState<UserProfileWithEmail[]>([]);
   const [refresh, setRefresh] = useState(false);
+  const [processingUsers, setProcessingUsers] = useState(true); // New state for processing
 
   useEffect(() => {
     const getUsers = async () => {
-      const data = await fetchAllUserProfiles();
-      if (data) {
-        setUsers(data);
+      setProcessingUsers(true); // Start processing
+      const fetchedProfiles = await fetchAllUserProfiles();
+
+      if (fetchedProfiles) {
+        const profilesWithEmails: UserProfileWithEmail[] = await Promise.all(
+          fetchedProfiles.map(async (profile: any) => {
+            let email = 'N/A';
+            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(profile.id);
+            if (userData?.user) {
+              email = userData.user.email || 'N/A';
+            } else if (userError) {
+              console.error(`Error fetching email for user ${profile.id}:`, userError);
+            }
+            return {
+              ...profile,
+              email: email,
+            };
+          })
+        );
+        setUsers(profilesWithEmails);
       }
+      setProcessingUsers(false); // End processing
     };
     getUsers();
   }, [refresh, fetchAllUserProfiles]);
 
-  if (loading) {
+  if (loading || processingUsers) {
     return <div className="text-center py-8">Loading users...</div>;
   }
 
@@ -64,7 +94,7 @@ export function AdminUserListPage() {
                     <div className="text-sm font-medium text-gray-900">{user.first_name} {user.last_name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.users?.email || 'N/A'}
+                    {user.email || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
