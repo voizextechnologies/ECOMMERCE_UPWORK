@@ -483,7 +483,6 @@ export function useAdminProducts() {
     setLoading(true);
     setError(null);
     try {
-      console.log(`useAdminProducts: Attempting to fetch product by ID: ${id}`);
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -1265,7 +1264,8 @@ export function useWishlist(userId: string | null) {
               name,
               price,
               images,
-              slug
+              slug,
+              stock
             )
           `
           )
@@ -1320,7 +1320,8 @@ export function useWishlist(userId: string | null) {
             name,
             price,
             images,
-            slug
+            slug,
+            stock
           )
         `
         )
