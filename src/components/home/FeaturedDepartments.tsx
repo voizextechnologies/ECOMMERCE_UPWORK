@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useDepartments } from '../../hooks/useSupabase'; // Import useDepartments hook
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 export function FeaturedDepartments() {
   const { departments, loading, error } = useDepartments(); // Fetch departments from Supabase
@@ -39,8 +40,9 @@ export function FeaturedDepartments() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {departments.map((department) => (
-            <div
+            <Link
               key={department.id}
+              to={`/shop?department=${department.slug}`} // Link to shop page with department slug
               className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group cursor-pointer"
             >
               <div className="relative h-64 overflow-hidden">
@@ -71,18 +73,18 @@ export function FeaturedDepartments() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
         <div className="text-center mt-12">
-          <a
-            href="/our-range"
+          <Link
+            to="/shop" // Link to general shop page
             className="inline-flex items-center px-8 py-3 bg-brown-900 text-white font-medium rounded-lg hover:bg-brown-700 transition-colors duration-200"
           >
             View All Departments
             <ArrowRight className="w-5 h-5 ml-2" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>
