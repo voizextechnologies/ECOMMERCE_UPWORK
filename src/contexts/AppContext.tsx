@@ -1,3 +1,4 @@
+// src/contexts/AppContext.tsx
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { CartItem, Product, ProductVariant, User } from '../types';
 import { supabase } from '../lib/supabase';
@@ -5,7 +6,6 @@ import { useCart, useWishlist } from '../hooks/useSupabase'; // Import useCart a
 
 interface AppState {
   user: User | null;
-  wishlist: string[]; // This will be replaced by wishlistItems from the hook
   isCartOpen: boolean;
   isMenuOpen: boolean;
   authLoading: boolean;
@@ -13,24 +13,19 @@ interface AppState {
 
 const initialState: AppState = {
   user: null,
-  wishlist: [],
   isCartOpen: false,
   isMenuOpen: false,
   authLoading: true,
 };
 
-// Removed cart-related actions from AppAction
 type AppAction =
-  | { type: 'TOGGLE_CART' } // Keep these for UI state
-  | { type: 'CLOSE_CART' } // Keep these for UI state
+  | { type: 'TOGGLE_CART' }
+  | { type: 'CLOSE_CART' }
   | { type: 'TOGGLE_MENU' }
   | { type: 'CLOSE_MENU' }
-  | { type: 'ADD_TO_WISHLIST'; payload: string } // This action will become redundant
-  | { type: 'REMOVE_FROM_WISHLIST'; payload: string } // This action will become redundant
   | { type: 'SET_USER'; payload: User | null }
   | { type: 'SET_AUTH_LOADING'; payload: boolean };
 
-// Update AppContext value type to include useCart's and useWishlist's return values
 const AppContext = createContext<{
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
@@ -42,18 +37,15 @@ const AppContext = createContext<{
   cartError: string | null;
   toggleCart: () => void;
   closeCart: () => void;
-  wishlistItems: any[]; // Add wishlistItems
-  addToWishlist: (productId: string) => Promise<void>; // Add addToWishlist
-  removeFromWishlist: (wishlistItemId: string) => Promise<void>; // Add removeFromWishlist
-  wishlistLoading: boolean; // Add wishlistLoading
-  wishlistError: string | null; // Add wishlistError
+  wishlistItems: any[];
+  addToWishlist: (productId: string) => Promise<void>;
+  removeFromWishlist: (wishlistItemId: string) => Promise<void>;
+  wishlistLoading: boolean;
+  wishlistError: string | null;
 } | null>(null);
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    // Removed ADD_TO_CART, REMOVE_FROM_CART, UPDATE_CART_QUANTITY, CLEAR_CART
-    // These actions will now be handled directly by the useCart hook's functions
-
     case 'TOGGLE_CART':
       console.log('appReducer: TOGGLE_CART - Before:', state.isCartOpen);
       const newCartState = { ...state, isCartOpen: !state.isCartOpen };
@@ -68,23 +60,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'CLOSE_MENU':
       return { ...state, isMenuOpen: false };
-
-    // These actions will be handled by the useWishlist hook directly,
-    // but keeping them here for now if other parts of the app still dispatch them.
-    // Ideally, components should call addToWishlist/removeFromWishlist directly from context.
-    case 'ADD_TO_WISHLIST':
-      return {
-        ...state,
-        wishlist: state.wishlist.includes(action.payload)
-          ? state.wishlist
-          : [...state.wishlist, action.payload]
-      };
-
-    case 'REMOVE_FROM_WISHLIST':
-      return {
-        ...state,
-        wishlist: state.wishlist.filter(id => id !== action.payload)
-      };
 
     case 'SET_USER':
       return { ...state, user: action.payload };
@@ -106,7 +81,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addToCart,
     removeFromCart,
     updateQuantity,
-  } = useCart(state.user?.id || null); // Use the useCart hook
+  } = useCart(state.user?.id || null);
 
   const {
     wishlistItems,
@@ -114,9 +89,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     error: wishlistError,
     addToWishlist,
     removeFromWishlist,
-  } = useWishlist(state.user?.id || null); // Use the useWishlist hook
+  } = useWishlist(state.user?.id || null);
 
-  // Auth logic moved from useAuth hook
   useEffect(() => {
     async function getUserSession() {
       dispatch({ type: 'SET_AUTH_LOADING', payload: true });
@@ -200,7 +174,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Provide cart-related and wishlist-related functions and state directly
   const contextValue = React.useMemo(() => ({
     state,
     dispatch,
@@ -215,11 +188,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'TOGGLE_CART' });
     },
     closeCart: () => dispatch({ type: 'CLOSE_CART' }),
-    wishlistItems, // Expose wishlist items
-    addToWishlist, // Expose addToWishlist function
-    removeFromWishlist, // Expose removeFromWishlist function
-    wishlistLoading, // Expose wishlist loading state
-    wishlistError, // Expose wishlist error state
+    wishlistItems,
+    addToWishlist,
+    removeFromWishlist,
+    wishlistLoading,
+    wishlistError,
   }), [state, dispatch, cartItems, addToCart, removeFromCart, updateQuantity, cartLoading, cartError, wishlistItems, addToWishlist, removeFromWishlist, wishlistLoading, wishlistError]);
 
 
@@ -237,4 +210,3 @@ export function useApp() {
   }
   return context;
 }
-
