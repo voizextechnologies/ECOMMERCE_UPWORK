@@ -99,7 +99,7 @@ function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   }
 
   console.log('ProtectedRoute: User is authenticated and authorized. Rendering children.');
-  return <>{children}</ProtectedRoute>;
+   return <>{children}</>;
 }
 
 export function AppRoutes() {
