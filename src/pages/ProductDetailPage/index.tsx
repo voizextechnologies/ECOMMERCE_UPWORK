@@ -8,7 +8,7 @@ import { useApp } from '../../contexts/AppContext';
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { product, loading, error } = useProduct(slug || '');
-  const { addToCart } = useApp(); // Get addToCart directly
+  const { addToCart, addToWishlist, state: { user } } = useApp(); // Get addToCart and addToWishlist, and user from useApp
   const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
 
@@ -33,6 +33,15 @@ export function ProductDetailPage() {
     // Call the addToCart function from useApp directly
     await addToCart(product.id, quantity, selectedVariant);
     setQuantity(1);
+  };
+
+  const handleAddToWishlist = async () => {
+    if (!user) {
+      alert('Please log in to add items to your wishlist.');
+      return;
+    }
+    await addToWishlist(product.id);
+    alert('Product added to wishlist!'); // Provide user feedback
   };
 
   const handleQuantityChange = (amount: number) => {
@@ -156,7 +165,7 @@ export function ProductDetailPage() {
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Add to Cart
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={handleAddToWishlist}> {/* Add onClick handler */}
                 <Heart className="w-5 h-5" />
               </Button>
             </div>
@@ -193,3 +202,4 @@ export function ProductDetailPage() {
     </div>
   );
 }
+
