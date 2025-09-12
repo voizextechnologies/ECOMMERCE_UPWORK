@@ -1,5 +1,5 @@
 // src/components/layout/AdminLayout.tsx
-import React, { useState } from 'react'; // Import useState
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import { AdminHeader } from './AdminHeader';
 import { AdminSidebar } from './AdminSidebar';
 
@@ -8,11 +8,29 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar visibility
+  // Initialize isSidebarOpen based on screen width
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 768);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  // Effect to handle window resizing
+  useEffect(() => {
+    const handleResize = () => {
+      // Only update if the breakpoint is crossed
+      if (window.innerWidth >= 768 && !isSidebarOpen) {
+        setIsSidebarOpen(true);
+      } else if (window.innerWidth < 768 && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isSidebarOpen]); // Depend on isSidebarOpen to re-evaluate when it changes
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -27,15 +45,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         ></div>
       )}
 
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? 'md:ml-64' : 'md:ml-0' // Adjust margin based on sidebar state for medium+ screens
+      }`}>
         {/* Header */}
         <AdminHeader toggleSidebar={toggleSidebar} />
 
         {/* Main content area */}
-        <main className={`flex-1 overflow-auto transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'md:ml-64' : 'md:ml-0' // Adjust margin based on sidebar state for medium+ screens
-        }`}>
-          <div className="bg-white rounded-lg shadow-md p-6 min-h-full">
+        <main className="flex-1 overflow-auto p-4">
+          <div className="bg-white rounded-lg shadow-md min-h-full">
             {children}
           </div>
         </main>
