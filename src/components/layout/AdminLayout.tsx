@@ -27,15 +27,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         ></div>
       )}
 
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? 'md:ml-64' : 'md:ml-0' // Adjust margin based on sidebar state for medium+ screens
+      }`}>
         {/* Header */}
         <AdminHeader toggleSidebar={toggleSidebar} />
 
         {/* Main content area */}
-        <main className={`flex-1 overflow-auto transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'md:ml-64' : 'md:ml-0' // Adjust margin based on sidebar state for medium+ screens
-        }`}>
-          <div className="bg-white rounded-lg shadow-md p-6 min-h-full">
+        <main className="flex-1 overflow-auto p-4"> {/* Added p-4 here, removed from inner div */}
+          <div className="bg-white rounded-lg shadow-md min-h-full"> {/* Removed p-6 from here */}
             {children}
           </div>
         </main>
