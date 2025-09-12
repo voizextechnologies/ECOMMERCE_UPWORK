@@ -34,7 +34,7 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Customer Service</h4>
             <ul className="space-y-2 text-brown-300">
-              <li><a href="/my-account" className="hover:text-white transition-colors">My Account</a></li>
+              <li><a href="/account" className="hover:text-white transition-colors">My Account</a></li>
               <li><a href="/cart" className="hover:text-white transition-colors">Shopping Cart</a></li>
               <li><a href="/checkout" className="hover:text-white transition-colors">Checkout</a></li>
               <li><a href="/help" className="hover:text-white transition-colors">Help & Support</a></li>
