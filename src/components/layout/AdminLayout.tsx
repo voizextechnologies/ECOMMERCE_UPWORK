@@ -1,5 +1,5 @@
 // src/components/layout/AdminLayout.tsx
-import React, { useState, useEffect } from 'react'; // Import useEffect
+import React, { useState } from 'react'; // Import useState
 import { AdminHeader } from './AdminHeader';
 import { AdminSidebar } from './AdminSidebar';
 
@@ -8,29 +8,11 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  // Initialize isSidebarOpen based on screen width
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 768);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar visibility
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
-  // Effect to handle window resizing
-  useEffect(() => {
-    const handleResize = () => {
-      // Only update if the breakpoint is crossed
-      if (window.innerWidth >= 768 && !isSidebarOpen) {
-        setIsSidebarOpen(true);
-      } else if (window.innerWidth < 768 && isSidebarOpen) {
-        setIsSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [isSidebarOpen]); // Depend on isSidebarOpen to re-evaluate when it changes
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -52,8 +34,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <AdminHeader toggleSidebar={toggleSidebar} />
 
         {/* Main content area */}
-        <main className="flex-1 overflow-auto p-4">
-          <div className="bg-white rounded-lg shadow-md min-h-full">
+        <main className="flex-1 overflow-auto p-4"> {/* Added p-4 here, removed from inner div */}
+          <div className="bg-white rounded-lg shadow-md min-h-full"> {/* Removed p-6 from here */}
             {children}
           </div>
         </main>
