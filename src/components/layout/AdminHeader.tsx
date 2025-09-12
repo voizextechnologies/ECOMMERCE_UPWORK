@@ -23,7 +23,7 @@ export function AdminHeader({ toggleSidebar }: AdminHeaderProps) {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h2 className="text-lg md:text-xl font-bold">Admin Dashboard</h2> {/* Adjusted font size */}
+        <h2 className="text-xl font-bold">Admin Dashboard</h2>
       </div>
       <Button variant="ghost" onClick={handleLogout} className="text-white hover:bg-brown-700">
         <LogOut className="w-5 h-5 mr-2" />
