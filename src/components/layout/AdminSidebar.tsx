@@ -47,12 +47,7 @@ export function AdminSidebar({ isSidebarOpen, toggleSidebar }: AdminSidebarProps
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  // Only close sidebar on navigation if on a small screen
-                  onClick={() => {
-                    if (window.innerWidth < 768) { // Check if on mobile breakpoint
-                      toggleSidebar();
-                    }
-                  }}
+                  onClick={toggleSidebar} // Close sidebar on navigation for mobile
                   className={`flex items-center p-2 rounded-md transition-colors ${
                     isActive
                       ? 'bg-brown-700 text-white'
