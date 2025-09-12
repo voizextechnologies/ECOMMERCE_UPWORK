@@ -1,5 +1,6 @@
 import React from 'react';
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Import Link
 
 export function Footer() {
   return (
@@ -23,10 +24,10 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-brown-300">
-              <li><a href="/shop" className="hover:text-white transition-colors">Our Range</a></li>
-              <li><a href="/services" className="hover:text-white transition-colors">Services</a></li>
-              <li><a href="/diy-advice" className="hover:text-white transition-colors">DIY Advice</a></li>
-              <li><a href="/find-a-store" className="hover:text-white transition-colors">Find a Store</a></li>
+              <li><Link to="/shop" className="hover:text-white transition-colors">Our Range</Link></li>
+              <li><Link to="/services" className="hover:text-white transition-colors">Services</Link></li>
+              <li><Link to="/diy-advice" className="hover:text-white transition-colors">DIY Advice</Link></li>
+              <li><Link to="/find-a-store" className="hover:text-white transition-colors">Find a Store</Link></li>
             </ul>
           </div>
 
@@ -34,10 +35,10 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Customer Service</h4>
             <ul className="space-y-2 text-brown-300">
-              <li><a href="/account" className="hover:text-white transition-colors">My Account</a></li>
-              <li><a href="/cart" className="hover:text-white transition-colors">Shopping Cart</a></li>
-              <li><a href="/checkout" className="hover:text-white transition-colors">Checkout</a></li>
-              <li><a href="/help" className="hover:text-white transition-colors">Help & Support</a></li>
+              <li><Link to="/account" className="hover:text-white transition-colors">My Account</Link></li>
+              <li><Link to="/cart" className="hover:text-white transition-colors">Shopping Cart</Link></li>
+              <li><Link to="/checkout" className="hover:text-white transition-colors">Checkout</Link></li>
+              <li><Link to="/help" className="hover:text-white transition-colors">Help & Support</Link></li>
             </ul>
           </div>
 
@@ -66,9 +67,9 @@ export function Footer() {
             © 2024 BuildMart. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0 text-sm text-brown-300">
-            <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="/returns" className="hover:text-white transition-colors">Returns</a>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/returns" className="hover:text-white transition-colors">Returns</Link>
           </div>
         </div>
       </div>
