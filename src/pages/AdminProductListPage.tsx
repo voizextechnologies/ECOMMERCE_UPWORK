@@ -81,78 +81,127 @@ export function AdminProductListPage() {
       {products.length === 0 ? (
         <div className="text-center text-gray-600 py-10">No products found.</div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stock
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Department
-                </th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
-                <tr key={product.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img className="h-10 w-10 rounded-full object-cover" src={product.images[0] || 'https://via.placeholder.com/40'} alt={product.name} />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                        <div className="text-sm text-gray-500">{product.slug}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
-                    {product.originalPrice && (
-                      <div className="text-sm text-gray-500 line-through">${product.originalPrice.toFixed(2)}</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      product.stock > 10 ? 'bg-green-100 text-green-800' :
-                      product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {product.stock}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.category}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.department}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link to={`/admin/products/${product.id}/edit`} className="text-brown-600 hover:text-brown-900 mr-3">
-                      <Edit className="w-5 h-5 inline" />
-                    </Link>
-                    <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900">
-                      <Trash2 className="w-5 h-5 inline" />
-                    </button>
-                  </td>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stock
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Department
+                  </th>
+                  <th scope="col" className="relative px-6 py-3">
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {products.map((product) => (
+                  <tr key={product.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <img className="h-10 w-10 rounded-full object-cover" src={product.images[0] || 'https://via.placeholder.com/40'} alt={product.name} />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm text-gray-500">{product.slug}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                      {product.originalPrice && (
+                        <div className="text-sm text-gray-500 line-through">${product.originalPrice.toFixed(2)}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        product.stock > 10 ? 'bg-green-100 text-green-800' :
+                        product.stock > 0 ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {product.stock}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.department}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <Link to={`/admin/products/${product.id}/edit`} className="text-brown-600 hover:text-brown-900 mr-3">
+                        <Edit className="w-5 h-5 inline" />
+                      </Link>
+                      <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900">
+                        <Trash2 className="w-5 h-5 inline" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {products.map((product) => (
+              <div key={product.id} className="bg-white rounded-lg shadow-md p-4">
+                <div className="flex items-center mb-4">
+                  <img
+                    src={product.images[0] || 'https://via.placeholder.com/60'}
+                    alt={product.name}
+                    className="w-16 h-16 rounded-lg object-cover mr-4"
+                  />
+                  <div>
+                    <h3 className="text-lg font-semibold text-brown-900">{product.name}</h3>
+                    <p className="text-sm text-gray-500">{product.slug}</p>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm text-brown-700 mb-4">
+                  <p>
+                    Price: <span className="font-medium">${product.price.toFixed(2)}</span>
+                    {product.originalPrice && (
+                      <span className="text-gray-500 line-through ml-2">${product.originalPrice.toFixed(2)}</span>
+                    )}
+                  </p>
+                  <p>
+                    Stock: <span className={`font-medium ${
+                      product.stock > 10 ? 'text-green-800' :
+                      product.stock > 0 ? 'text-yellow-800' :
+                      'text-red-800'
+                    }`}>{product.stock}</span>
+                  </p>
+                  <p>Category: <span className="font-medium">{product.category}</span></p>
+                  <p>Department: <span className="font-medium">{product.department}</span></p>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Link to={`/admin/products/${product.id}/edit`}>
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
