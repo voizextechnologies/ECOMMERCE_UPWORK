@@ -172,6 +172,7 @@ export function AppRoutes() {
                 <AdminLayout>
                   <Routes>
                     <Route index element={<AdminDashboardPage />} />
+                    <Route index element={<AdminDashboardPage />} /> {/* Use the new AdminDashboardPage */}
                     {/* Admin Product Routes */}
                     <Route path="products" element={<AdminProductListPage />} />
                     <Route path="products/new" element={<AdminAddProductPage />} />
