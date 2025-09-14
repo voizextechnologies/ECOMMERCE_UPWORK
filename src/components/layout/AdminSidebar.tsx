@@ -1,7 +1,7 @@
 // src/components/layout/AdminSidebar.tsx
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom'; // Import useLocation
-import { LayoutDashboard, Package, List, Users, ShoppingBag, BookOpen, Settings, X } from 'lucide-react'; // Import X icon
+import { Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Package, List, Users, ShoppingBag, BookOpen, Settings, X } from 'lucide-react';
 
 interface AdminSidebarProps {
   isSidebarOpen: boolean;
@@ -29,7 +29,12 @@ export function AdminSidebar({ isSidebarOpen, toggleSidebar }: AdminSidebarProps
       md:relative md:translate-x-0 md:flex-shrink-0
     `}>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-white">BuildMart Admin</h1>
+        {/* Replaced h1 with img tag for the logo */}
+        <img
+          src="/EcoConnect Supply Chain Logo - Earth Tones (1).png"
+          alt="EcoConnect Supply Chain Logo"
+          className="h-10 w-auto" // Adjust size as needed
+        />
         <button
           onClick={toggleSidebar}
           className="md:hidden p-2 text-white hover:bg-brown-700 rounded-md"
@@ -47,7 +52,6 @@ export function AdminSidebar({ isSidebarOpen, toggleSidebar }: AdminSidebarProps
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  onClick={toggleSidebar} // Close sidebar on navigation for mobile
                   className={`flex items-center p-2 rounded-md transition-colors ${
                     isActive
                       ? 'bg-brown-700 text-white'
