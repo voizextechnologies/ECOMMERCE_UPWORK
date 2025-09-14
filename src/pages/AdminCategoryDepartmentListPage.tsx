@@ -141,9 +141,9 @@ export function AdminCategoryDepartmentListPage() {
                     <div className="md:hidden space-y-4 mt-4"> {/* Added mt-4 for spacing from department header */}
                       {department.categories.map((category) => (
                         <div key={category.id} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-lg font-semibold text-brown-900">{category.name}</h4>
-                            <span className="text-sm text-gray-500">{category.slug}</span>
+                          <div className="flex items-start justify-between mb-2"> {/* Changed items-center to items-start */}
+                            <h4 className="text-lg font-semibold text-brown-900 flex-1 min-w-0 break-words pr-2">{category.name}</h4> {/* Added flex-1, min-w-0, break-words, pr-2 */}
+                            <span className="text-sm text-gray-500 flex-shrink-0">{category.slug}</span> {/* Added flex-shrink-0 */}
                           </div>
                           <div className="space-y-1 text-sm text-brown-700 mb-4">
                             <p>
