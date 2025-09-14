@@ -43,9 +43,12 @@ export function Header() {
             >
               <Menu className="w-6 h-6" /> {/* Increased icon size */}
             </Button>
-            <h1 className="text-3xl font-bold text-brown-100"> {/* Increased font size */}
-              BuildMart
-            </h1>
+            {/* Replaced h1 with img tag for the logo */}
+            <img
+              src="/EcoConnect Supply Chain Logo - Earth Tones (1).png"
+              alt="EcoConnect Supply Chain Logo"
+              className="h-10 w-auto" // Adjust size as needed
+            />
           </div>
 
           {/* Search bar */}
