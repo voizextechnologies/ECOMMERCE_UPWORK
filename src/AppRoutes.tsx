@@ -66,6 +66,17 @@ import { ServiceDetailPage } from './pages/ServiceDetailPage'; // New import
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
 
+
+// Placeholder for Admin Dashboard Page
+function AdminDashboardPage() {
+  return (
+    <div> {/* Removed p-6 as padding is now handled by AdminLayout's inner div */}
+      <h2 className="text-3xl font-bold text-brown-900 mb-6">Admin Dashboard</h2>
+      <p className="text-brown-700">Welcome to the admin panel. Use the sidebar to navigate.</p>
+    </div>
+  );
+}
+
 // ProtectedRoute component to guard admin routes
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -160,7 +171,7 @@ export function AppRoutes() {
               <ProtectedRoute adminOnly>
                 <AdminLayout>
                   <Routes>
-                    <Route index element={<AdminDashboardPage />} /> {/* Use the new AdminDashboardPage */}
+                    <Route index element={<AdminDashboardPage />} />
                     {/* Admin Product Routes */}
                     <Route path="products" element={<AdminProductListPage />} />
                     <Route path="products/new" element={<AdminAddProductPage />} />
@@ -203,3 +214,4 @@ export function AppRoutes() {
     </div>
   );
 }
+
