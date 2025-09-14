@@ -171,7 +171,7 @@ export function AppRoutes() {
               <ProtectedRoute adminOnly>
                 <AdminLayout>
                   <Routes>
-                    <Route index element={<AdminDashboardPage />} />
+                  
                     <Route index element={<AdminDashboardPage />} /> {/* Use the new AdminDashboardPage */}
                     {/* Admin Product Routes */}
                     <Route path="products" element={<AdminProductListPage />} />
