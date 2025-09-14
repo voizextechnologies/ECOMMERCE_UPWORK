@@ -54,7 +54,8 @@ export function AdminCategoryDepartmentListPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-brown-900">Categories & Departments</h2>
-        <div className="space-x-2">
+        {/* Modified: Make buttons stack on mobile, horizontal on md+ */}
+        <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0">
           <Link to="/admin/categories/new-department">
             <Button>
               <PlusCircle className="w-5 h-5 mr-2" />
@@ -78,7 +79,8 @@ export function AdminCategoryDepartmentListPage() {
             <div key={department.id} className="bg-white rounded-lg shadow overflow-hidden">
               <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
                 <h3 className="text-xl font-semibold text-brown-900">{department.name}</h3>
-                <div className="flex space-x-2">
+                {/* Modified: Make buttons stack on mobile, horizontal on md+ */}
+                <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0">
                   <Link to={`/admin/categories/departments/${department.id}/edit`}>
                     <Button variant="outline" size="sm">
                       <Edit className="w-4 h-4 mr-1" /> Edit Department
