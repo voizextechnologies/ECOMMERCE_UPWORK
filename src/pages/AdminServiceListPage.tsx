@@ -54,7 +54,7 @@ export function AdminServiceListPage() {
       {services.length === 0 ? (
         <div className="text-center text-gray-600 py-10">No services found.</div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <div className="overflow-x-auto bg-white rounded-lg shadow"> {/* Added overflow-x-auto here */}
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
