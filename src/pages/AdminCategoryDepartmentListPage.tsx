@@ -91,47 +91,79 @@ export function AdminCategoryDepartmentListPage() {
               </div>
               <div className="p-4">
                 {department.categories && department.categories.length > 0 ? (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Category Name
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Slug
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Product Count
-                        </th>
-                        <th scope="col" className="relative px-6 py-3">
-                          <span className="sr-only">Actions</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                  <>
+                    {/* Desktop Table View for Categories */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Category Name
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Slug
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Product Count
+                            </th>
+                            <th scope="col" className="relative px-6 py-3">
+                              <span className="sr-only">Actions</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {department.categories.map((category) => (
+                            <tr key={category.id}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {category.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {category.slug}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {category.product_count}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <Link to={`/admin/categories/categories/${category.id}/edit`} className="text-brown-600 hover:text-brown-900 mr-3">
+                                  <Edit className="w-5 h-5 inline" />
+                                </Link>
+                                <button onClick={() => handleDeleteCategory(category.id, category.name)} className="text-red-600 hover:text-red-900">
+                                  <Trash2 className="w-5 h-5 inline" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Card View for Categories */}
+                    <div className="md:hidden space-y-4 mt-4"> {/* Added mt-4 for spacing from department header */}
                       {department.categories.map((category) => (
-                        <tr key={category.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {category.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {category.slug}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {category.product_count}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Link to={`/admin/categories/categories/${category.id}/edit`} className="text-brown-600 hover:text-brown-900 mr-3">
-                              <Edit className="w-5 h-5 inline" />
+                        <div key={category.id} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-lg font-semibold text-brown-900">{category.name}</h4>
+                            <span className="text-sm text-gray-500">{category.slug}</span>
+                          </div>
+                          <div className="space-y-1 text-sm text-brown-700 mb-4">
+                            <p>
+                              Product Count: <span className="font-medium">{category.product_count}</span>
+                            </p>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Link to={`/admin/categories/categories/${category.id}/edit`}>
+                              <Button variant="outline" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
                             </Link>
-                            <button onClick={() => handleDeleteCategory(category.id, category.name)} className="text-red-600 hover:text-red-900">
-                              <Trash2 className="w-5 h-5 inline" />
-                            </button>
-                          </td>
-                        </tr>
+                            <Button variant="outline" size="sm" onClick={() => handleDeleteCategory(category.id, category.name)} className="text-red-600 hover:text-red-900">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  </>
                 ) : (
                   <p className="text-gray-600 text-center py-4">No categories in this department.</p>
                 )}
