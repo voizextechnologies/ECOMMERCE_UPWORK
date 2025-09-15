@@ -102,7 +102,7 @@ export function AppRoutes() {
   const isAuthRoute = location.pathname === '/register' || location.pathname === '/login';
 
   return (
-    <div className="min-h-screen bg-brown-300">
+    <div className="min-h-screen bg-brown-300 overflow-x-hidden">
       {!isAdminRoute && !isAuthRoute && <Header />}
       <main>
         <Routes>
