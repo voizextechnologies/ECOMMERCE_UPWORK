@@ -1,10 +1,14 @@
+// src/components/shop/ShopFilters.tsx
 import React, { useState, useEffect } from 'react';
-import { useDepartments, useProducts } from '../../hooks/useSupabase';
+import { useDepartments, useProducts, useAdminUsers } from '../../hooks/useSupabase'; // Import useAdminUsers
 import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 
 export function ShopFilters() {
   const { departments, loading: departmentsLoading, error: departmentsError } = useDepartments();
+  const { products: allProducts, loading: productsLoading, error: productsError } = useProducts({ limit: 1000 });
+  const { fetchAllUserProfiles, loading: usersLoading, error: usersError } = useAdminUsers(); // Fetch all users to get sellers
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [minPrice, setMinPrice] = useState<number>(
@@ -16,24 +20,41 @@ export function ShopFilters() {
   const [selectedBrands, setSelectedBrands] = useState<string[]>(
     searchParams.getAll('brand')
   );
+  const [selectedSellerId, setSelectedSellerId] = useState<string | undefined>(
+    searchParams.get('seller') || undefined
+  ); // NEW: State for selected seller
+
+  const [sellers, setSellers] = useState<any[]>([]); // NEW: State to store seller profiles
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
-    department: true, // New section
+    department: true,
     category: true,
     price: true,
     brand: true,
+    seller: true, // NEW: Seller section
   });
 
-  // Fetch products to get unique brands for the brand filter
-  const { products: allProducts, loading: productsLoading, error: productsError } = useProducts({ limit: 1000 });
   const uniqueBrands = Array.from(new Set(allProducts.map(p => p.brand))).filter(Boolean) as string[];
 
   useEffect(() => {
     setMinPrice(Number(searchParams.get('minPrice')) || 0);
     setMaxPrice(Number(searchParams.get('maxPrice')) || 1000);
     setSelectedBrands(searchParams.getAll('brand'));
+    setSelectedSellerId(searchParams.get('seller') || undefined); // NEW
   }, [searchParams]);
+
+  // NEW: Fetch sellers on component mount
+  useEffect(() => {
+    const getSellers = async () => {
+      const allUsers = await fetchAllUserProfiles();
+      if (allUsers) {
+        setSellers(allUsers.filter(user => user.role === 'seller'));
+      }
+    };
+    getSellers();
+  }, [fetchAllUserProfiles]);
+
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
@@ -54,6 +75,10 @@ export function ShopFilters() {
     });
   };
 
+  const handleSellerChange = (sellerId: string) => { // NEW
+    setSelectedSellerId(sellerId === selectedSellerId ? undefined : sellerId);
+  };
+
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -67,11 +92,12 @@ export function ShopFilters() {
     setMinPrice(0);
     setMaxPrice(1000);
     setSelectedBrands([]);
+    setSelectedSellerId(undefined); // NEW
   };
 
   const applyFilters = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString());
-    newSearchParams.delete('page'); // Reset page when filters change
+    newSearchParams.delete('page');
 
     if (minPrice > 0) {
       newSearchParams.set('minPrice', minPrice.toString());
@@ -88,10 +114,17 @@ export function ShopFilters() {
     newSearchParams.delete('brand');
     selectedBrands.forEach(brand => newSearchParams.append('brand', brand));
 
+    // NEW: Apply seller filter
+    if (selectedSellerId) {
+      newSearchParams.set('seller', selectedSellerId);
+    } else {
+      newSearchParams.delete('seller');
+    }
+
     setSearchParams(newSearchParams);
   };
 
-  const hasActiveFilters = minPrice > 0 || maxPrice < 1000 || selectedBrands.length > 0 || searchParams.get('category') || searchParams.get('department'); // Updated
+  const hasActiveFilters = minPrice > 0 || maxPrice < 1000 || selectedBrands.length > 0 || searchParams.get('category') || searchParams.get('department') || searchParams.get('seller'); // Updated
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-brown-100 overflow-hidden">
@@ -154,7 +187,7 @@ export function ShopFilters() {
                       onClick={() => {
                         const newSearchParams = new URLSearchParams(searchParams.toString());
                         newSearchParams.delete('department');
-                        newSearchParams.delete('category'); // Clear category when "All Departments" is selected
+                        newSearchParams.delete('category');
                         newSearchParams.delete('page');
                         setSearchParams(newSearchParams);
                       }}
@@ -174,7 +207,7 @@ export function ShopFilters() {
                       onClick={() => {
                         const newSearchParams = new URLSearchParams(searchParams.toString());
                         newSearchParams.set('department', department.slug);
-                        newSearchParams.delete('category'); // Clear category when a department is selected
+                        newSearchParams.delete('category');
                         newSearchParams.delete('page');
                         setSearchParams(newSearchParams);
                       }}
@@ -227,7 +260,7 @@ export function ShopFilters() {
                       onClick={() => {
                         const newSearchParams = new URLSearchParams(searchParams.toString());
                         newSearchParams.delete('category');
-                        newSearchParams.delete('department'); // Clear department when "All Categories" is selected
+                        newSearchParams.delete('department');
                         newSearchParams.delete('page');
                         setSearchParams(newSearchParams);
                       }}
@@ -249,7 +282,7 @@ export function ShopFilters() {
                           onClick={() => {
                             const newSearchParams = new URLSearchParams(searchParams.toString());
                             newSearchParams.set('category', category.slug);
-                            newSearchParams.delete('department'); // Clear department when a category is selected
+                            newSearchParams.delete('department');
                             newSearchParams.delete('page');
                             setSearchParams(newSearchParams);
                           }}
@@ -309,7 +342,7 @@ export function ShopFilters() {
                 </div>
               </div>
               
-              <div className="relative h-6"> {/* Increased height to accommodate larger thumbs */}
+              <div className="relative h-6">
                 <input
                   type="range"
                   min="0"
@@ -317,8 +350,8 @@ export function ShopFilters() {
                   value={minPrice}
                   onChange={handlePriceChange}
                   id="minPriceSlider"
-                  className="absolute w-full h-2 rounded-lg appearance-none cursor-pointer slider-thumb slider-track z-10" // Removed bg-brown-200
-                  style={{ top: '50%', transform: 'translateY(-50%)' }} // Center vertically
+                  className="absolute w-full h-2 rounded-lg appearance-none cursor-pointer slider-thumb slider-track z-10"
+                  style={{ top: '50%', transform: 'translateY(-50%)' }}
                 />
                 <input
                   type="range"
@@ -327,14 +360,9 @@ export function ShopFilters() {
                   value={maxPrice}
                   onChange={handlePriceChange}
                   id="maxPriceSlider"
-                  className="absolute w-full h-2 rounded-lg appearance-none cursor-pointer slider-thumb slider-track z-20" // Removed bg-brown-200
-                  style={{ top: '50%', transform: 'translateY(-50%)' }} // Center vertically
+                  className="absolute w-full h-2 rounded-lg appearance-none cursor-pointer slider-thumb slider-track z-20"
+                  style={{ top: '50%', transform: 'translateY(-50%)' }}
                 />
-                {/* To visually represent the "filled" range between the two thumbs,
-                    a more advanced CSS technique or a dedicated library would be needed.
-                    With two separate native range inputs, styling the "fill" between them
-                    is not straightforward. The current approach focuses on making the
-                    thumbs and the overall track clearer and more interactive. */}
               </div>
               
               <div className="flex justify-between text-sm text-brown-600 mt-6">
@@ -346,7 +374,7 @@ export function ShopFilters() {
         </div>
 
         {/* Brand Filter */}
-        <div className="pb-6">
+        <div className="border-b border-brown-100 pb-6"> {/* Added border-b */}
           <button
             onClick={() => toggleSection('brand')}
             className="flex items-center justify-between w-full text-left mb-4 group"
@@ -386,6 +414,68 @@ export function ShopFilters() {
                       </span>
                     </label>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* NEW: Seller Filter */}
+        <div className="pb-6">
+          <button
+            onClick={() => toggleSection('seller')}
+            className="flex items-center justify-between w-full text-left mb-4 group"
+          >
+            <h3 className="text-lg font-semibold text-brown-900 group-hover:text-brown-700 transition-colors">
+              Seller
+            </h3>
+            {expandedSections.seller ? (
+              <ChevronUp className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-brown-600 group-hover:text-brown-800 transition-colors" />
+            )}
+          </button>
+          
+          {expandedSections.seller && (
+            <div className="space-y-3">
+              {usersLoading ? (
+                <div className="animate-pulse space-y-2">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="h-6 bg-brown-100 rounded"></div>
+                  ))}
+                </div>
+              ) : usersError ? (
+                <p className="text-red-500 text-sm">Error loading sellers</p>
+              ) : (
+                <div className="max-h-48 overflow-y-auto space-y-2">
+                  {sellers.map((seller) => (
+                    <label key={seller.id} className="flex items-center group cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sellerFilter" // Use radio buttons for single selection
+                        className="w-4 h-4 text-brown-600 bg-brown-50 border-brown-300 rounded-full focus:ring-brown-500 focus:ring-2"
+                        checked={selectedSellerId === seller.id}
+                        onChange={() => handleSellerChange(seller.id)}
+                      />
+                      <span className="ml-3 text-sm text-brown-700 group-hover:text-brown-900 transition-colors">
+                        {seller.first_name} {seller.last_name}
+                      </span>
+                    </label>
+                  ))}
+                  {sellers.length > 0 && (
+                    <label className="flex items-center group cursor-pointer">
+                      <input
+                        type="radio"
+                        name="sellerFilter"
+                        className="w-4 h-4 text-brown-600 bg-brown-50 border-brown-300 rounded-full focus:ring-brown-500 focus:ring-2"
+                        checked={!selectedSellerId}
+                        onChange={() => handleSellerChange(undefined)}
+                      />
+                      <span className="ml-3 text-sm text-brown-700 group-hover:text-brown-900 transition-colors">
+                        All Sellers
+                      </span>
+                    </label>
+                  )}
                 </div>
               )}
             </div>
