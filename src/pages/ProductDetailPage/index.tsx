@@ -1,6 +1,5 @@
-// src/pages/ProductDetailPage/index.tsx
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom'; // Import Link
+import React, { useState, useEffect } from 'react'; // Added useEffect
+import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../../hooks/useSupabase';
 import { Button } from '../../components/ui/Button';
 import { ShoppingCart, Star, Heart } from 'lucide-react';
@@ -12,8 +11,23 @@ export function ProductDetailPage() {
   const { addToCart, addToWishlist, removeFromWishlist, state: { user }, wishlistItems } = useApp();
   const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
-
   const foundWishlistItem = wishlistItems.find(item => item.product_id === product?.id);
+
+  // Update document title and meta description
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.name} - BuildMart`;
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', product.description.substring(0, 160));
+      } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = product.description.substring(0, 160);
+        document.head.appendChild(newMeta);
+      }
+    }
+  }, [product]);
 
   if (loading) {
     return (
@@ -31,7 +45,7 @@ export function ProductDetailPage() {
     );
   }
 
-   const handleAddToCart = async () => {
+  const handleAddToCart = async () => {
     console.log('handleAddToCart called');
     await addToCart(product.id, quantity, selectedVariant);
     setQuantity(1);
@@ -85,14 +99,12 @@ export function ProductDetailPage() {
               </div>
             )}
           </div>
-
           {/* Product Details */}
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-brown-900 mb-3">
               {product.name}
             </h1>
             <p className="text-brown-600 text-lg mb-4">{product.description}</p>
-
             <div className="flex items-center mb-4">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
@@ -110,7 +122,6 @@ export function ProductDetailPage() {
                 ({product.review_count} reviews)
               </span>
             </div>
-
             <div className="flex items-baseline space-x-3 mb-6">
               <span className="text-4xl font-bold text-brown-900">
                 ${currentPrice.toFixed(2)}
@@ -121,7 +132,6 @@ export function ProductDetailPage() {
                 </span>
               )}
             </div>
-
             {/* Variants */}
             {product.product_variants && product.product_variants.length > 0 && (
               <div className="mb-6">
@@ -140,7 +150,6 @@ export function ProductDetailPage() {
                 </div>
               </div>
             )}
-
             {/* Quantity and Stock */}
             <div className="flex items-center mb-6 space-x-4">
               <h3 className="text-lg font-semibold text-brown-900">Quantity:</h3>
@@ -158,7 +167,6 @@ export function ProductDetailPage() {
                 {currentStock === 0 && <span className="text-red-500">(Out of Stock)</span>}
               </span>
             </div>
-
             {/* Action Buttons */}
             <div className="flex space-x-4 mb-6">
               <Button
@@ -179,7 +187,6 @@ export function ProductDetailPage() {
                 <Heart className={`w-5 h-5 ${foundWishlistItem ? 'fill-current' : ''}`} />
               </Button>
             </div>
-
             {/* Specifications */}
             {product.specifications && Object.keys(product.specifications).length > 0 && (
               <div className="mb-6">
@@ -193,7 +200,6 @@ export function ProductDetailPage() {
                 </ul>
               </div>
             )}
-
             {/* Brand and Category */}
             <div className="text-sm text-brown-700">
               <p>
@@ -205,7 +211,7 @@ export function ProductDetailPage() {
               <p>
                 <span className="font-semibold">Department:</span> {product.departments?.name}
               </p>
-              {product.seller && ( // NEW: Display Seller Information
+              {product.seller && (
                 <p>
                   <span className="font-semibold">Sold by:</span>{' '}
                   <Link to={`/shop?seller=${product.seller.id}`} className="text-brown-600 hover:underline">
