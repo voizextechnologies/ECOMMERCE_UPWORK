@@ -72,168 +72,25 @@ import { SellerProductListPage } from './pages/SellerProductListPage'; // NEW
 import { SellerAddProductPage } from './pages/SellerAddProductPage'; // NEW
 import { SellerEditProductPage } from './pages/SellerEditProductPage'; // NEW
 import { SellerCategoryDepartmentListPage } from './pages/SellerCategoryDepartmentListPage'; // NEW
-import { SellerAddDepartmentPage } from './pages/SellerAddDepartmentPage'; // NEW
-import { SellerEditDepartmentPage } from './pages/SellerEditDepartmentPage'; // NEW
-import { SellerAddCategoryPage } from './pages/SellerAddCategoryPage'; // NEW
-import { SellerEditCategoryPage } from './pages/SellerEditCategoryPage'; // NEW
-import { SellerSettingsPage } from './pages/SellerSettingsPage'; // NEW
+import { SellerAddDepartmentPage } => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
 
-
-// ProtectedRoute component to guard routes based on authentication
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRole?: 'admin' | 'seller' | 'customer'; // Make role explicit
-}
-
-function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { state: { user, authLoading } } = useApp();
-
-  if (authLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (requiredRole && user.role !== requiredRole) {
-    // Special handling for admin: admins can access customer and seller routes
-    if (user.role === 'admin' && (requiredRole === 'customer' || requiredRole === 'seller')) {
-      return <>{children}</>;
-    }
-    return <Navigate to="/" replace />; // Redirect if role doesn't match
-  }
-
-  return <>{children}</>;
-}
-
-export function AppRoutes() {
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const isSellerRoute = location.pathname.startsWith('/seller'); // NEW
-  const isAuthRoute = location.pathname === '/register' || location.pathname === '/login';
+  const handleSearch = async () => {
+    const response = await fetch(`/api/search?q=${query}`);
+    const data = await response.json();
+    setResults(data);
+  };
 
   return (
-    <div className="min-h-screen bg-brown-300 overflow-x-hidden">
-      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Header />} {/* Update Header condition */}
-      <main>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={
-            <>
-              <HeroSlider />
-              <ShopByCategory />
-              <FeaturedDepartments />
-              <InspiringIdeas />
-              <TrendingProducts />
-              <PopularProducts />
-              <TrustBadges />
-            </>
-          } />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/products/:slug" element={<ProductDetailPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/services/:slug" element={<ServiceDetailPage />} />
-          <Route path="/diy-advice" element={<DIYAdvicePage />} />
-          <Route path="/diy-advice/:slug" element={<DIYArticleDetailPage />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-
-          {/* Protected User Routes (Customer/General User) */}
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute requiredRole="customer"> {/* Explicitly require customer role */}
-                <AccountDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/checkout"
-            element={
-              <ProtectedRoute requiredRole="customer"> {/* Explicitly require customer role */}
-                <CheckoutPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
-
-
-          {/* Admin Login Route */}
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-
-          {/* Admin Protected Routes */}
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute requiredRole="admin"> {/* Explicitly require admin role */}
-                <AdminLayout>
-                  <Routes>
-                    <Route index element={<AdminDashboardPage />} />
-                    {/* Admin Product Routes */}
-                    <Route path="products" element={<AdminProductListPage />} />
-                    <Route path="products/new" element={<AdminAddProductPage />} />
-                    <Route path="products/:id/edit" element={<AdminEditProductPage />} />
-                    
-                    {/* Admin Categories & Departments Routes */}
-                    <Route path="categories" element={<AdminCategoryDepartmentListPage />} />
-                    <Route path="categories/new-department" element={<AdminAddDepartmentPage />} />
-                    <Route path="categories/departments/:id/edit" element={<AdminEditDepartmentPage />} />
-                    <Route path="categories/new-category" element={<AdminAddCategoryPage />} />
-                    <Route path="categories/categories/:id/edit" element={<AdminEditCategoryPage />} />
-
-                    {/* Admin Orders Routes */}
-                    <Route path="orders" element={<AdminOrderListPage />} />
-                    <Route path="orders/:id" element={<AdminOrderDetailPage />} />
-
-                    {/* Admin Users Routes */}
-                    <Route path="users" element={<AdminUserListPage />} />
-                    <Route path="users/:id/edit" element={<AdminEditUserPage />} />
-
-                    {/* Admin DIY Articles Routes */}
-                    <Route path="articles" element={<AdminDIYArticleListPage />} />
-                    <Route path="articles/new" element={<AdminAddDIYArticlePage />} />
-                    <Route path="articles/:id/edit" element={<AdminEditDIYArticlePage />} />
-
-                    {/* Admin Services Routes */}
-                    <Route path="services" element={<AdminServiceListPage />} />
-                    <Route path="services/new" element={<AdminAddServicePage />} />
-                    <Route path="services/:id/edit" element={<AdminEditServicePage />} />
-
-                  </Routes>
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* NEW: Seller Protected Routes */}
-          <Route
-            path="/seller/*"
-            element={
-              <SellerProtectedRoute> {/* Use the new SellerProtectedRoute */}
-                <SellerLayout> {/* Use the new SellerLayout */}
-                  <Routes>
-                    <Route index element={<SellerDashboardPage />} /> {/* NEW */}
-                    <Route path="products" element={<SellerProductListPage />} /> {/* NEW */}
-                    <Route path="products/new" element={<SellerAddProductPage />} /> {/* NEW */}
-                    <Route path="products/:id/edit" element={<SellerEditProductPage />} /> {/* NEW */}
-                    <Route path="categories" element={<SellerCategoryDepartmentListPage />} /> {/* NEW */}
-                    <Route path="categories/new-department" element={<SellerAddDepartmentPage />} /> {/* NEW */}
-                    <Route path="categories/departments/:id/edit" element={<SellerEditDepartmentPage />} /> {/* NEW */}
-                    <Route path="categories/new-category" element={<SellerAddCategoryPage />} /> {/* NEW */}
-                    <Route path="categories/categories/:id/edit" element={<SellerEditCategoryPage />} /> {/* NEW */}
-                    <Route path="settings" element={<SellerSettingsPage />} /> {/* NEW */}
-                  </Routes>
-                </SellerLayout>
-              </SellerProtectedRoute>
-            }
-          />
-        </Routes>
-      </main>
-      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Footer />} {/* Update Footer condition */}
-      <MiniCart />
+    <div>
+      <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <button onClick={handleSearch}>Search</button>
+      <ul>
+        {results.map((result) => (
+          <li key={result.id}>{result.name}</li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
