@@ -29,7 +29,7 @@ export function SellerSidebar({ isSidebarOpen, toggleSidebar }: SellerSidebarPro
         <img
           src="/EcoConnect Supply Chain Logo - Earth Tones (1).png"
           alt="EcoConnect Supply Chain Logo"
-          className="h-20 w-auto"
+          className="h-40 w-auto"
         />
         <button
           onClick={toggleSidebar}
