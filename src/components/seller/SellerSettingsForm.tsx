@@ -1,4 +1,3 @@
-// src/components/seller/SellerSettingsForm.tsx
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 
@@ -67,7 +66,7 @@ export function SellerSettingsForm({ initialData, onSubmit, loading, error }: Se
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm font-mono"
           placeholder='{"type": "flat_rate", "cost": 10.00}'
         ></textarea>
-        <p className="mt-1 text-xs text-gray-500">Define your freight rules as a JSON object. Example: `{"type": "per_item", "cost": 5.00}` or `{"type": "flat_rate", "cost": 15.00}`.</p>
+        <p className="mt-1 text-xs text-gray-500">Define your freight rules as a JSON object. Example: {'{"type": "per_item", "cost": 5.00}'} or {'{"type": "flat_rate", "cost": 15.00}'}.</p>
       </div>
 
       <Button type="submit" disabled={loading}>
