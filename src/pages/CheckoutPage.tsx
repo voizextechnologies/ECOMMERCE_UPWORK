@@ -1,19 +1,19 @@
 // src/pages/CheckoutPage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useAddresses } from '../hooks/useSupabase';
 import { Button } from '../components/ui/Button';
 import { AddressForm } from '../components/account/AddressForm';
-import { AddressList } from '../components/account/AddressList'; // Reusing AddressList for display
+import { AddressList } from '../components/account/AddressList';
 import { MapPin, Package, CreditCard } from 'lucide-react';
 import { Address } from '../types';
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '../lib/supabase';
 
 export function CheckoutPage() {
-  const { cartItems, cartLoading, cartError, closeCart, state: { user } } = useApp(); // Destructure user from state
-  const { addresses, loading: addressesLoading, error: addressesError } = useAddresses(user?.id || null); // Use user.id
+  const { cartItems, cartLoading, cartError, closeCart, state: { user } } = useApp();
+  const { addresses, loading: addressesLoading, error: addressesError } = useAddresses(user?.id || null);
   const navigate = useNavigate();
 
   const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<string | null>(null);
@@ -21,17 +21,24 @@ export function CheckoutPage() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [formAddressType, setFormAddressType] = useState<'shipping' | 'billing'>('shipping');
-  const [processingCheckout, setProcessingCheckout] = useState(false); // New state for checkout processing
+  const [processingCheckout, setProcessingCheckout] = useState(false);
+
+  // NEW: State for calculated totals
+  const [calculatedSubtotal, setCalculatedSubtotal] = useState('0.00');
+  const [calculatedTax, setCalculatedTax] = useState('0.00');
+  const [calculatedFreight, setCalculatedFreight] = useState('0.00');
+  const [calculatedGrandTotal, setCalculatedGrandTotal] = useState('0.00');
+  const [calculationLoading, setCalculationLoading] = useState(false);
+  const [calculationError, setCalculationError] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (!cartLoading && cartItems.length === 0) {
-      // If cart is empty, redirect to cart page
       navigate('/cart');
     }
   }, [cartItems, cartLoading, navigate]);
 
   useEffect(() => {
-    // Pre-select first shipping and billing addresses if available
     if (!addressesLoading && addresses.length > 0) {
       const defaultShipping = addresses.find(addr => addr.type === 'shipping');
       const defaultBilling = addresses.find(addr => addr.type === 'billing');
@@ -40,10 +47,74 @@ export function CheckoutPage() {
     }
   }, [addresses, addressesLoading]);
 
-  const total = cartItems.reduce((sum, item) => {
-    const itemPrice = item.product_variants?.price || item.products.price;
-    return sum + (itemPrice * item.quantity);
-  }, 0);
+  // NEW: Function to calculate totals using Edge Function
+  const calculateTotals = useCallback(async () => {
+    if (!selectedShippingAddressId || cartItems.length === 0) {
+      setCalculatedSubtotal('0.00');
+      setCalculatedTax('0.00');
+      setCalculatedFreight('0.00');
+      setCalculatedGrandTotal('0.00');
+      setCalculationError(null);
+      return;
+    }
+
+    setCalculationLoading(true);
+    setCalculationError(null);
+
+    const shippingAddr = addresses.find(addr => addr.id === selectedShippingAddressId);
+    if (!shippingAddr) {
+      setCalculationError('Shipping address not found.');
+      setCalculationLoading(false);
+      return;
+    }
+
+    const itemsForCalculation = cartItems.map(item => ({
+      product_id: item.product_id,
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+    }));
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-order-total`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          items: itemsForCalculation,
+          shippingAddress: {
+            country: shippingAddr.country,
+            state: shippingAddr.state,
+            postcode: shippingAddr.postcode,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Calculation failed: ${errorData.error}`);
+      }
+
+      const data = await response.json();
+      setCalculatedSubtotal(data.subtotal);
+      setCalculatedTax(data.totalTax);
+      setCalculatedFreight(data.totalFreight);
+      setCalculatedGrandTotal(data.grandTotal);
+
+    } catch (err: any) {
+      setCalculationError(err.message || 'Failed to calculate totals.');
+      console.error('Error calculating totals:', err);
+    } finally {
+      setCalculationLoading(false);
+    }
+  }, [cartItems, selectedShippingAddressId, addresses]);
+
+  // NEW: Recalculate totals when cart items or selected shipping address changes
+  useEffect(() => {
+    calculateTotals();
+  }, [calculateTotals]);
+
 
   const handleAddAddress = (type: 'shipping' | 'billing') => {
     setEditingAddress(null);
@@ -53,14 +124,13 @@ export function CheckoutPage() {
 
   const handleEditAddress = (address: Address) => {
     setEditingAddress(address);
-    setFormAddressType(address.type); // Set form type based on address type
+    setFormAddressType(address.type);
     setShowAddressForm(true);
   };
 
   const handleFormSuccess = () => {
     setShowAddressForm(false);
     setEditingAddress(null);
-    // Addresses hook will re-fetch, and useEffect will re-select defaults
   };
 
   const handleFormCancel = () => {
@@ -91,12 +161,12 @@ export function CheckoutPage() {
         .from('orders')
         .insert({
           user_id: user.id,
-          order_number: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Generate a simple order number
+          order_number: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
           status: 'pending',
-          total: total,
+          total: parseFloat(calculatedGrandTotal), // Use calculated grand total
           shipping_address_id: selectedShippingAddressId,
           billing_address_id: selectedBillingAddressId,
-          delivery_method: 'shipping', // Assuming 'shipping' for now
+          delivery_method: 'shipping',
         })
         .select('id')
         .single();
@@ -111,7 +181,7 @@ export function CheckoutPage() {
         product_id: item.product_id,
         variant_id: item.variant_id,
         quantity: item.quantity,
-        price: item.product_variants?.price || item.products.price,
+        price: item.product_variants?.price || item.products.price, // Use individual product price
       }));
 
       const { error: orderItemsError } = await supabase
@@ -131,6 +201,9 @@ export function CheckoutPage() {
         },
         body: JSON.stringify({
           orderId: newOrder.id,
+          // Pass calculated totals to Stripe session if needed for display,
+          // but Stripe will recalculate based on line_items for security.
+          // The Edge Function already fetches product prices.
         }),
       });
 
@@ -225,15 +298,31 @@ export function CheckoutPage() {
 
             <div className="flex justify-between items-center text-lg text-brown-700 mt-6">
               <span>Subtotal ({cartItems.length} items)</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${calculatedSubtotal}</span> {/* Use calculated subtotal */}
+            </div>
+            <div className="flex justify-between items-center text-lg text-brown-700 mb-3">
+              <span>Shipping</span>
+              {calculationLoading ? (
+                <span>Calculating...</span>
+              ) : calculationError ? (
+                <span className="text-red-500">{calculationError}</span>
+              ) : (
+                <span>${calculatedFreight}</span> {/* Use calculated freight */}
+              )}
             </div>
             <div className="flex justify-between items-center text-lg text-brown-700 mb-6">
-              <span>Shipping</span>
-              <span>Calculated at next step</span>
+              <span>Tax</span>
+              {calculationLoading ? (
+                <span>Calculating...</span>
+              ) : calculationError ? (
+                <span className="text-red-500">{calculationError}</span>
+              ) : (
+                <span>${calculatedTax}</span> {/* Use calculated tax */}
+              )}
             </div>
             <div className="flex justify-between items-center text-2xl font-bold text-brown-900 border-t border-brown-200 pt-4">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${calculatedGrandTotal}</span> {/* Use calculated grand total */}
             </div>
           </div>
 
@@ -322,10 +411,10 @@ export function CheckoutPage() {
                   className="w-full mt-6"
                   size="lg"
                   onClick={handleProceedToPayment}
-                  disabled={!selectedShippingAddressId || !selectedBillingAddressId || processingCheckout}
+                  disabled={!selectedShippingAddressId || !selectedBillingAddressId || processingCheckout || calculationLoading || !!calculationError} // Disable if calculation is loading or has error
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
-                  {processingCheckout ? 'Processing...' : 'Proceed to Payment'}
+                  {processingCheckout ? 'Processing...' : (calculationLoading ? 'Calculating...' : 'Proceed to Payment')}
                 </Button>
               </div>
             )}
