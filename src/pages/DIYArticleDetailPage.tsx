@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react'; // Added useEffect
 import { useParams } from 'react-router-dom';
 import { useDIYArticleBySlug } from '../hooks/useSupabase';
 import { Calendar, User } from 'lucide-react';
@@ -6,6 +6,22 @@ import { Calendar, User } from 'lucide-react';
 export function DIYArticleDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { article, loading, error } = useDIYArticleBySlug(slug || '');
+
+  // Update document title and meta description
+  useEffect(() => {
+    if (article) {
+      document.title = `${article.title} - DIY Advice - BuildMart`;
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', article.excerpt.substring(0, 160));
+      } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = article.excerpt.substring(0, 160);
+        document.head.appendChild(newMeta);
+      }
+    }
+  }, [article]);
 
   if (loading) {
     return (
