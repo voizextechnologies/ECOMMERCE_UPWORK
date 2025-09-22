@@ -1,5 +1,4 @@
-// src/pages/CheckoutPage.tsx
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useAddresses } from '../hooks/useSupabase';
@@ -23,14 +22,13 @@ export function CheckoutPage() {
   const [formAddressType, setFormAddressType] = useState<'shipping' | 'billing'>('shipping');
   const [processingCheckout, setProcessingCheckout] = useState(false);
 
-  // NEW: State for calculated totals
+  // State for calculated totals
   const [calculatedSubtotal, setCalculatedSubtotal] = useState('0.00');
   const [calculatedTax, setCalculatedTax] = useState('0.00');
   const [calculatedFreight, setCalculatedFreight] = useState('0.00');
   const [calculatedGrandTotal, setCalculatedGrandTotal] = useState('0.00');
   const [calculationLoading, setCalculationLoading] = useState(false);
   const [calculationError, setCalculationError] = useState<string | null>(null);
-
 
   useEffect(() => {
     if (!cartLoading && cartItems.length === 0) {
@@ -47,7 +45,7 @@ export function CheckoutPage() {
     }
   }, [addresses, addressesLoading]);
 
-  // NEW: Function to calculate totals using Edge Function
+  // Function to calculate totals using Edge Function
   const calculateTotals = useCallback(async () => {
     if (!selectedShippingAddressId || cartItems.length === 0) {
       setCalculatedSubtotal('0.00');
@@ -110,11 +108,10 @@ export function CheckoutPage() {
     }
   }, [cartItems, selectedShippingAddressId, addresses]);
 
-  // NEW: Recalculate totals when cart items or selected shipping address changes
+  // Recalculate totals when cart items or selected shipping address changes
   useEffect(() => {
     calculateTotals();
   }, [calculateTotals]);
-
 
   const handleAddAddress = (type: 'shipping' | 'billing') => {
     setEditingAddress(null);
@@ -163,7 +160,7 @@ export function CheckoutPage() {
           user_id: user.id,
           order_number: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
           status: 'pending',
-          total: parseFloat(calculatedGrandTotal), // Use calculated grand total
+          total: parseFloat(calculatedGrandTotal),
           shipping_address_id: selectedShippingAddressId,
           billing_address_id: selectedBillingAddressId,
           delivery_method: 'shipping',
@@ -181,7 +178,7 @@ export function CheckoutPage() {
         product_id: item.product_id,
         variant_id: item.variant_id,
         quantity: item.quantity,
-        price: item.product_variants?.price || item.products.price, // Use individual product price
+        price: item.product_variants?.price || item.products.price,
       }));
 
       const { error: orderItemsError } = await supabase
@@ -201,9 +198,6 @@ export function CheckoutPage() {
         },
         body: JSON.stringify({
           orderId: newOrder.id,
-          // Pass calculated totals to Stripe session if needed for display,
-          // but Stripe will recalculate based on line_items for security.
-          // The Edge Function already fetches product prices.
         }),
       });
 
@@ -284,12 +278,12 @@ export function CheckoutPage() {
                       <p className="text-sm text-brown-600">Variant: {item.product_variants.name}</p>
                     )}
                     <p className="text-brown-700 mt-1">
-                      $ {(item.product_variants?.price || item.products.price).toFixed(2)} x {item.quantity}
+                      {"$" + (item.product_variants?.price || item.products.price).toFixed(2)} x {item.quantity}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-brown-900">
-                      $ {((item.product_variants?.price || item.products.price) * item.quantity).toFixed(2)}
+                      {"$" + ((item.product_variants?.price || item.products.price) * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -298,7 +292,7 @@ export function CheckoutPage() {
 
             <div className="flex justify-between items-center text-lg text-brown-700 mt-6">
               <span>Subtotal ({cartItems.length} items)</span>
-              <span>$ {calculatedSubtotal}</span> {/* Use calculated subtotal */}
+              <span>{"$" + calculatedSubtotal}</span>
             </div>
             <div className="flex justify-between items-center text-lg text-brown-700 mb-3">
               <span>Shipping</span>
@@ -307,7 +301,7 @@ export function CheckoutPage() {
               ) : calculationError ? (
                 <span className="text-red-500">{calculationError}</span>
               ) : (
-                <span>$ {calculatedFreight}</span> {/* Use calculated freight */}
+                <span>{"$" + calculatedFreight}</span>
               )}
             </div>
             <div className="flex justify-between items-center text-lg text-brown-700 mb-6">
@@ -317,12 +311,12 @@ export function CheckoutPage() {
               ) : calculationError ? (
                 <span className="text-red-500">{calculationError}</span>
               ) : (
-                <span>$ {calculatedTax}</span> {/* Use calculated tax */}
+                <span>{"$" + calculatedTax}</span>
               )}
             </div>
             <div className="flex justify-between items-center text-2xl font-bold text-brown-900 border-t border-brown-200 pt-4">
               <span>Total</span>
-              <span>$ {calculatedGrandTotal}</span> {/* Use calculated grand total */}
+              <span>{"$" + calculatedGrandTotal}</span>
             </div>
           </div>
 
@@ -411,7 +405,7 @@ export function CheckoutPage() {
                   className="w-full mt-6"
                   size="lg"
                   onClick={handleProceedToPayment}
-                  disabled={!selectedShippingAddressId || !selectedBillingAddressId || processingCheckout || calculationLoading || !!calculationError} // Disable if calculation is loading or has error
+                  disabled={!selectedShippingAddressId || !selectedBillingAddressId || processingCheckout || calculationLoading || !!calculationError}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
                   {processingCheckout ? 'Processing...' : (calculationLoading ? 'Calculating...' : 'Proceed to Payment')}
