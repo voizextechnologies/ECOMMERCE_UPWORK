@@ -31,10 +31,11 @@ export function AdminSidebar({ isSidebarOpen, toggleSidebar }: AdminSidebarProps
       <div className="flex justify-between items-center mb-8">
         {/* Replaced h1 with img tag for the logo */}
         <img
-          src="/EcoConnect Supply Chain Logo - Earth Tones (1).png"
-          alt="EcoConnect Supply Chain Logo"
-          className="h-10 w-auto" // Adjust size as needed
-        />
+  src="/EcoConnect Supply Chain Logo - Earth Tones (1).png"
+  alt="EcoConnect Supply Chain Logo"
+  className="h-20 w-auto" // increased height, width auto keeps proportions
+/>
+
         <button
           onClick={toggleSidebar}
           className="md:hidden p-2 text-white hover:bg-brown-700 rounded-md"
