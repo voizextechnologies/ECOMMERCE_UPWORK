@@ -1,5 +1,6 @@
+// src/pages/ProductDetailPage/index.tsx
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom'; // Import Link
 import { useProduct } from '../../hooks/useSupabase';
 import { Button } from '../../components/ui/Button';
 import { ShoppingCart, Star, Heart } from 'lucide-react';
@@ -8,11 +9,10 @@ import { useApp } from '../../contexts/AppContext';
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { product, loading, error } = useProduct(slug || '');
-  const { addToCart, addToWishlist, removeFromWishlist, state: { user }, wishlistItems } = useApp(); // Get wishlistItems and removeFromWishlist
+  const { addToCart, addToWishlist, removeFromWishlist, state: { user }, wishlistItems } = useApp();
   const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
 
-  // Check if the current product is in the wishlist and get the item itself
   const foundWishlistItem = wishlistItems.find(item => item.product_id === product?.id);
 
   if (loading) {
@@ -43,10 +43,8 @@ export function ProductDetailPage() {
       return;
     }
     if (foundWishlistItem) {
-      // If already in wishlist, remove it
       await removeFromWishlist(foundWishlistItem.id);
     } else {
-      // If not in wishlist, add it
       await addToWishlist(product.id);
     }
   };
@@ -207,6 +205,14 @@ export function ProductDetailPage() {
               <p>
                 <span className="font-semibold">Department:</span> {product.departments?.name}
               </p>
+              {product.seller && ( // NEW: Display Seller Information
+                <p>
+                  <span className="font-semibold">Sold by:</span>{' '}
+                  <Link to={`/shop?seller=${product.seller.id}`} className="text-brown-600 hover:underline">
+                    {product.seller.first_name} {product.seller.last_name}
+                  </Link>
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -214,4 +220,3 @@ export function ProductDetailPage() {
     </div>
   );
 }
-
