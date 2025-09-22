@@ -7,7 +7,7 @@ type Tables = Database['public']['Tables'];
 
 interface UseProductsOptions {
   categorySlug?: string;
-  departmentSlug?: string; // Add this
+  departmentSlug?: string;
   searchQuery?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -20,10 +20,9 @@ interface UseProductsOptions {
 export function useProducts(options?: UseProductsOptions) {
   const [products, setProducts] = useState<Tables['products']['Row'][]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true); // CORRECTED LINE: Changed from `true` to `useState(true)`
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Create a stable key for the options to prevent unnecessary re-renders
   const optionsKey = JSON.stringify(options || {});
   useEffect(() => {
     async function fetchProducts() {
@@ -34,7 +33,6 @@ export function useProducts(options?: UseProductsOptions) {
         let categoryIdToFilter: string | null = null;
         let departmentIdToFilter: string | null = null;
 
-        // 1. Fetch category ID if categorySlug is provided
         if (options?.categorySlug) {
           const { data: categoryData, error: categoryError } = await supabase
             .from('categories')
@@ -49,7 +47,6 @@ export function useProducts(options?: UseProductsOptions) {
           if (categoryData) {
             categoryIdToFilter = categoryData.id;
           } else {
-            // If categorySlug is provided but no category found, return empty products
             setProducts([]);
             setTotalCount(0);
             setLoading(false);
@@ -57,7 +54,6 @@ export function useProducts(options?: UseProductsOptions) {
           }
         }
 
-        // 2. Fetch department ID if departmentSlug is provided
         if (options?.departmentSlug) {
           const { data: departmentData, error: departmentError } = await supabase
             .from('departments')
@@ -72,14 +68,12 @@ export function useProducts(options?: UseProductsOptions) {
           if (departmentData) {
             departmentIdToFilter = departmentData.id;
           } else {
-            // If departmentSlug is provided but no department found, return empty products
             setProducts([]);
             setTotalCount(0);
             setLoading(false);
             return;
           }
         }
-
 
         let query = supabase
           .from('products')
@@ -95,12 +89,16 @@ export function useProducts(options?: UseProductsOptions) {
               id,
               name,
               slug
+            ),
+            seller:user_profiles!seller_id (
+              id,
+              first_name,
+              last_name
             )
-          `,
+          `, // ADDED seller profile
             { count: 'exact' }
           );
 
-        // Apply filters
         if (categoryIdToFilter) {
           query = query.eq('category_id', categoryIdToFilter);
         }
@@ -117,14 +115,12 @@ export function useProducts(options?: UseProductsOptions) {
           query = query.lte('price', options.maxPrice);
         }
 
-        // Apply search query
         if (options?.searchQuery) {
           query = query.or(
             `name.ilike.%${options.searchQuery}%,description.ilike.%${options.searchQuery}%`
           );
         }
 
-        // Apply pagination
         if (options?.limit !== undefined && options?.offset !== undefined) {
           query = query.range(options.offset, options.offset + options.limit - 1);
         }
@@ -143,7 +139,7 @@ export function useProducts(options?: UseProductsOptions) {
     }
 
     fetchProducts();
-  }, [optionsKey]); // Use stable key instead of individual options
+  }, [optionsKey]);
 
   return { products, totalCount, loading, error };
 }
@@ -219,8 +215,13 @@ export function useProduct(slug: string) {
               price,
               stock,
               attributes
+            ),
+            seller:user_profiles!seller_id (
+              id,
+              first_name,
+              last_name
             )
-          `
+          ` // ADDED seller profile
           )
           .eq('slug', slug)
           .single();
@@ -459,13 +460,14 @@ export function useAdminProducts() {
         .select(`
           *,
           categories!category_id (name),
-          departments!department_id (name)
-        `)
+          departments!department_id (name),
+          seller:user_profiles!seller_id (first_name, last_name)
+        `) // ADDED seller profile
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('useAdminProducts: Supabase fetch error:', error);
-        throw error; // Re-throw to be caught by the outer catch block
+        throw error;
       }
       console.log('useAdminProducts: Products fetched successfully.');
       return data;
@@ -488,8 +490,9 @@ export function useAdminProducts() {
         .select(`
           *,
           categories!category_id (id, name),
-          departments!department_id (id, name)
-        `)
+          departments!department_id (id, name),
+          seller:user_profiles!seller_id (id, first_name, last_name)
+        `) // ADDED seller profile
         .eq('id', id)
         .single();
       if (error) {
@@ -582,6 +585,150 @@ export function useAdminProducts() {
     deleteProduct,
   };
 }
+
+// NEW HOOK: Seller-specific product CRUD operations
+export function useSellerProducts(sellerId: string | null) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllProducts = useCallback(async () => {
+    if (!sellerId) {
+      setError('Seller ID is required to fetch products.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories!category_id (name),
+          departments!department_id (name)
+        `)
+        .eq('seller_id', sellerId) // Filter by seller_id
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch seller products');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const fetchProductById = useCallback(async (id: string) => {
+    if (!sellerId) {
+      setError('Seller ID is required to fetch products.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories!category_id (id, name),
+          departments!department_id (id, name)
+        `)
+        .eq('id', id)
+        .eq('seller_id', sellerId) // Ensure product belongs to seller
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch product');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const addProduct = useCallback(async (productData: Tables['products']['Insert']) => {
+    if (!sellerId) {
+      setError('Seller ID is required to add products.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert({ ...productData, seller_id: sellerId }) // Assign seller_id
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add product');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const updateProduct = useCallback(async (id: string, productData: Tables['products']['Update']) => {
+    if (!sellerId) {
+      setError('Seller ID is required to update products.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', id)
+        .eq('seller_id', sellerId) // Ensure product belongs to seller
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update product');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const deleteProduct = useCallback(async (id: string) => {
+    if (!sellerId) {
+      setError('Seller ID is required to delete products.');
+      return false;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+        .eq('seller_id', sellerId); // Ensure product belongs to seller
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete product');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  return {
+    loading,
+    error,
+    fetchAllProducts,
+    fetchProductById,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+  };
+}
+
 
 // Admin-specific Categories & Departments CRUD operations
 export function useAdminCategoriesDepartments() {
@@ -783,6 +930,251 @@ export function useAdminCategoriesDepartments() {
     deleteCategory,
   };
 }
+
+// NEW HOOK: Seller-specific Categories & Departments CRUD operations
+export function useSellerCategories(sellerId: string | null) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllDepartmentsWithCategories = useCallback(async () => {
+    if (!sellerId) {
+      setError('Seller ID is required to fetch categories and departments.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select(`
+          *,
+          categories (
+            id,
+            slug,
+            name,
+            description,
+            image,
+            product_count
+          )
+        `)
+        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Fetch global and seller's own departments
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch seller departments and categories');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const fetchDepartmentById = useCallback(async (id: string) => {
+    if (!sellerId) {
+      setError('Seller ID is required to fetch department.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .eq('id', id)
+        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure department is global or seller's own
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const addDepartment = useCallback(async (departmentData: Tables['departments']['Insert']) => {
+    if (!sellerId) {
+      setError('Seller ID is required to add department.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .insert({ ...departmentData, seller_id: sellerId }) // Assign seller_id
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const updateDepartment = useCallback(async (id: string, departmentData: Tables['departments']['Update']) => {
+    if (!sellerId) {
+      setError('Seller ID is required to update department.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .update(departmentData)
+        .eq('id', id)
+        .eq('seller_id', sellerId) // Ensure department belongs to seller
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const deleteDepartment = useCallback(async (id: string) => {
+    if (!sellerId) {
+      setError('Seller ID is required to delete department.');
+      return false;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('departments')
+        .delete()
+        .eq('id', id)
+        .eq('seller_id', sellerId); // Ensure department belongs to seller
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete department');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const fetchCategoryById = useCallback(async (id: string) => {
+    if (!sellerId) {
+      setError('Seller ID is required to fetch category.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('id', id)
+        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure category is global or seller's own
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch category');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const addCategory = useCallback(async (categoryData: Tables['categories']['Insert']) => {
+    if (!sellerId) {
+      setError('Seller ID is required to add category.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .insert({ ...categoryData, seller_id: sellerId }) // Assign seller_id
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add category');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const updateCategory = useCallback(async (id: string, categoryData: Tables['categories']['Update']) => {
+    if (!sellerId) {
+      setError('Seller ID is required to update category.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .update(categoryData)
+        .eq('id', id)
+        .eq('seller_id', sellerId) // Ensure category belongs to seller
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update category');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  const deleteCategory = useCallback(async (id: string) => {
+    if (!sellerId) {
+      setError('Seller ID is required to delete category.');
+      return false;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id)
+        .eq('seller_id', sellerId); // Ensure category belongs to seller
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete category');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  return {
+    loading,
+    error,
+    fetchAllDepartmentsWithCategories,
+    fetchDepartmentById,
+    addDepartment,
+    updateDepartment,
+    deleteDepartment,
+    fetchCategoryById,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+  };
+}
+
 
 // Admin-specific Orders CRUD operations
 export function useAdminOrders() {
@@ -1288,27 +1680,25 @@ export function useWishlist(userId: string | null) {
       setError('User must be logged in to add to wishlist');
       return;
     }
-    setError(null); // Clear previous errors
+    setError(null);
 
     try {
-      // Check if item already exists in wishlist to prevent duplicates
       const { data: existingItem, error: selectError } = await supabase
         .from('wishlist')
         .select('id')
         .eq('user_id', userId)
         .eq('product_id', productId)
-        .maybeSingle(); // Use maybeSingle() here
+        .maybeSingle();
 
-      if (selectError) { // If maybeSingle() returns an error, it's a real query error
+      if (selectError) {
         throw selectError;
       }
 
       if (existingItem) {
         console.log('Product already in wishlist:', productId);
-        return; // Item already exists, do nothing
+        return;
       }
 
-      // If no existing item, proceed with insert
       const { data, error: insertError } = await supabase
         .from('wishlist')
         .insert({ user_id: userId, product_id: productId })
@@ -1325,7 +1715,7 @@ export function useWishlist(userId: string | null) {
           )
         `
         )
-        .single(); // Use single() here as we expect one result after insert
+        .single();
 
       if (insertError) {
         throw insertError;
@@ -1343,7 +1733,7 @@ export function useWishlist(userId: string | null) {
         .from('wishlist')
         .delete()
         .eq('id', wishlistItemId)
-        .eq('user_id', userId); // Ensure user can only delete their own items
+        .eq('user_id', userId);
 
       if (error) throw error;
 
@@ -1388,7 +1778,8 @@ export function useUserOrders(userId: string | null) {
                 id,
                 name,
                 images,
-                slug
+                slug,
+                seller_id
               ),
               product_variants (
                 id,
@@ -1415,4 +1806,71 @@ export function useUserOrders(userId: string | null) {
   }, [userId]);
 
   return { orders, loading, error };
+}
+
+// NEW HOOK: Seller-specific settings CRUD operations
+export function useSellerSettings(sellerId: string | null) {
+  const [settings, setSettings] = useState<Tables['seller_settings']['Row'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      if (!sellerId) {
+        setSettings(null);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error } = await supabase
+          .from('seller_settings')
+          .select('*')
+          .eq('seller_id', sellerId)
+          .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+          throw error;
+        }
+        setSettings(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch seller settings');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSettings();
+  }, [sellerId]);
+
+  const upsertSettings = useCallback(async (settingsData: Tables['seller_settings']['Insert']) => {
+    if (!sellerId) {
+      setError('Seller ID is required to save settings.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('seller_settings')
+        .upsert({ ...settingsData, seller_id: sellerId }, { onConflict: 'seller_id' })
+        .select()
+        .single();
+      if (error) throw error;
+      setSettings(data);
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save seller settings');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]);
+
+  return {
+    settings,
+    loading,
+    error,
+    upsertSettings,
+  };
 }
