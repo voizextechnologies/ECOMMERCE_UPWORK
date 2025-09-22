@@ -47,7 +47,7 @@ export function Header() {
            <img
   src="/EcoConnect Supply Chain Logo - Earth Tones (1).png"
   alt="EcoConnect Supply Chain Logo"
-  className="h-20 w-auto" // increased height, width auto keeps proportions
+  className="h-40 w-auto" // increased height, width auto keeps proportions
 />
 
           </div>
