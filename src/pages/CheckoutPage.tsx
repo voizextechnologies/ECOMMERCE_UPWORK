@@ -284,12 +284,12 @@ export function CheckoutPage() {
                       <p className="text-sm text-brown-600">Variant: {item.product_variants.name}</p>
                     )}
                     <p className="text-brown-700 mt-1">
-                      ${(item.product_variants?.price || item.products.price).toFixed(2)} x {item.quantity}
+                      $ {(item.product_variants?.price || item.products.price).toFixed(2)} x {item.quantity}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-brown-900">
-                      ${((item.product_variants?.price || item.products.price) * item.quantity).toFixed(2)}
+                      $ {((item.product_variants?.price || item.products.price) * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export function CheckoutPage() {
 
             <div className="flex justify-between items-center text-lg text-brown-700 mt-6">
               <span>Subtotal ({cartItems.length} items)</span>
-              <span>${calculatedSubtotal}</span> {/* Use calculated subtotal */}
+              <span>$ {calculatedSubtotal}</span> {/* Use calculated subtotal */}
             </div>
             <div className="flex justify-between items-center text-lg text-brown-700 mb-3">
               <span>Shipping</span>
@@ -307,7 +307,7 @@ export function CheckoutPage() {
               ) : calculationError ? (
                 <span className="text-red-500">{calculationError}</span>
               ) : (
-                <span>${calculatedFreight}</span> {/* Use calculated freight */}
+                <span>$ {calculatedFreight}</span> {/* Use calculated freight */}
               )}
             </div>
             <div className="flex justify-between items-center text-lg text-brown-700 mb-6">
@@ -317,12 +317,12 @@ export function CheckoutPage() {
               ) : calculationError ? (
                 <span className="text-red-500">{calculationError}</span>
               ) : (
-                <span>${calculatedTax}</span> {/* Use calculated tax */}
+                <span>$ {calculatedTax}</span> {/* Use calculated tax */}
               )}
             </div>
             <div className="flex justify-between items-center text-2xl font-bold text-brown-900 border-t border-brown-200 pt-4">
               <span>Total</span>
-              <span>${calculatedGrandTotal}</span> {/* Use calculated grand total */}
+              <span>$ {calculatedGrandTotal}</span> {/* Use calculated grand total */}
             </div>
           </div>
 
