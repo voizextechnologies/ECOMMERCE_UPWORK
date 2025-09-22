@@ -1,3 +1,4 @@
+// src/pages/AdminEditUserPage.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminUsers } from '../hooks/useSupabase';
@@ -126,6 +127,7 @@ export function AdminEditUserPage() {
             >
               <option value="customer">Customer</option>
               <option value="admin">Admin</option>
+              <option value="seller">Seller</option> {/* ADD THIS LINE */}
             </select>
           </div>
 
