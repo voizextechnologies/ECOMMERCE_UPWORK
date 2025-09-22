@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react'; // Added useEffect
 import { useParams } from 'react-router-dom';
 import { useServiceBySlug } from '../hooks/useSupabase';
 import { DollarSign, Clock, Tag } from 'lucide-react';
@@ -6,6 +6,22 @@ import { DollarSign, Clock, Tag } from 'lucide-react';
 export function ServiceDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { service, loading, error } = useServiceBySlug(slug || '');
+
+  // Update document title and meta description
+  useEffect(() => {
+    if (service) {
+      document.title = `${service.name} - Services - BuildMart`;
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', service.description.substring(0, 160));
+      } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = service.description.substring(0, 160);
+        document.head.appendChild(newMeta);
+      }
+    }
+  }, [service]);
 
   if (loading) {
     return (
