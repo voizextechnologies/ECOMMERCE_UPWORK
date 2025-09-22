@@ -1,6 +1,5 @@
 // src/AppRoutes.tsx
 import React from 'react';
-import { Button } from './components/ui/Button';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -17,7 +16,7 @@ import { ShopPage } from './pages/ShopPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminLoginPage } from './pages/AdminLoginPage';
-import { useApp } from './contexts/AppContext'; // Import useApp instead of useAuth
+import { useApp } from './contexts/AppContext';
 
 // Import new admin product pages
 import { AdminProductListPage } from './pages/AdminProductListPage';
@@ -27,9 +26,9 @@ import { RegisterPage } from './pages/RegisterPage';
 import { AccountDashboardPage } from './pages/AccountDashboardPage';
 import { CartPage } from './pages/CartPage';
 import { LoginPage } from './pages/LoginPage';
-import { CheckoutPage } from './pages/CheckoutPage'; // Import CheckoutPage
-import { OrderConfirmationPage } from './pages/OrderConfirmationPage'; // Import OrderConfirmationPage
-import { WishlistPage } from './pages/WishlistPage'; // Import WishlistPage
+import { CheckoutPage } from './pages/CheckoutPage';
+import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
+import { WishlistPage } from './pages/WishlistPage';
 
 // Import new admin pages for Categories & Departments
 import { AdminCategoryDepartmentListPage } from './pages/AdminCategoryDepartmentListPage';
@@ -59,51 +58,64 @@ import { AdminEditServicePage } from './pages/AdminEditServicePage';
 // Import new public pages for Services and DIY Advice
 import { ServicesPage } from './pages/ServicesPage';
 import { DIYAdvicePage } from './pages/DIYAdvicePage';
-import { DIYArticleDetailPage } from './pages/DIYArticleDetailPage'; // New import
-import { ServiceDetailPage } from './pages/ServiceDetailPage'; // New import
+import { DIYArticleDetailPage } from './pages/DIYArticleDetailPage';
+import { ServiceDetailPage } from './pages/ServiceDetailPage';
 
 // Import the new AdminDashboardPage
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
+// NEW IMPORTS FOR SELLER DASHBOARD
+import { SellerProtectedRoute } from './components/auth/SellerProtectedRoute'; // NEW
+import { SellerLayout } from './components/layout/SellerLayout'; // NEW
+import { SellerDashboardPage } from './pages/SellerDashboardPage'; // NEW
+import { SellerProductListPage } from './pages/SellerProductListPage'; // NEW
+import { SellerAddProductPage } from './pages/SellerAddProductPage'; // NEW
+import { SellerEditProductPage } from './pages/SellerEditProductPage'; // NEW
+import { SellerCategoryDepartmentListPage } from './pages/SellerCategoryDepartmentListPage'; // NEW
+import { SellerAddDepartmentPage } from './pages/SellerAddDepartmentPage'; // NEW
+import { SellerEditDepartmentPage } from './pages/SellerEditDepartmentPage'; // NEW
+import { SellerAddCategoryPage } from './pages/SellerAddCategoryPage'; // NEW
+import { SellerEditCategoryPage } from './pages/SellerEditCategoryPage'; // NEW
+import { SellerSettingsPage } from './pages/SellerSettingsPage'; // NEW
 
-// ProtectedRoute component to guard admin routes
+
+// ProtectedRoute component to guard routes based on authentication
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  adminOnly?: boolean;
+  requiredRole?: 'admin' | 'seller' | 'customer'; // Make role explicit
 }
 
-function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
-  const { state: { user, authLoading } } = useApp(); // Get user and authLoading from AppContext
+function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+  const { state: { user, authLoading } } = useApp();
 
-  console.log('ProtectedRoute rendering. User:', user, 'AuthLoading:', authLoading); // Updated log
-
-  if (authLoading) { // Use authLoading from context
-    console.log('ProtectedRoute: Still loading user session from AppContext...'); // Updated log
+  if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!user) {
-    console.log('ProtectedRoute: No user found, redirecting to /login');
-    return <Navigate to="/login" replace />; // Changed redirect target to /login
+    return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && user.role !== 'admin') {
-    console.log('ProtectedRoute: User is not admin, redirecting to /');
-    return <Navigate to="/" replace />;
+  if (requiredRole && user.role !== requiredRole) {
+    // Special handling for admin: admins can access customer and seller routes
+    if (user.role === 'admin' && (requiredRole === 'customer' || requiredRole === 'seller')) {
+      return <>{children}</>;
+    }
+    return <Navigate to="/" replace />; // Redirect if role doesn't match
   }
 
-  console.log('ProtectedRoute: User is authenticated and authorized. Rendering children.');
-   return <>{children}</>;
+  return <>{children}</>;
 }
 
 export function AppRoutes() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isSellerRoute = location.pathname.startsWith('/seller'); // NEW
   const isAuthRoute = location.pathname === '/register' || location.pathname === '/login';
 
   return (
     <div className="min-h-screen bg-brown-300 overflow-x-hidden">
-      {!isAdminRoute && !isAuthRoute && <Header />}
+      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Header />} {/* Update Header condition */}
       <main>
         <Routes>
           {/* Public Routes */}
@@ -112,7 +124,6 @@ export function AppRoutes() {
               <HeroSlider />
               <ShopByCategory />
               <FeaturedDepartments />
-              <FeaturedCategoriesWeek />
               <InspiringIdeas />
               <TrendingProducts />
               <PopularProducts />
@@ -125,16 +136,16 @@ export function AppRoutes() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/services" element={<ServicesPage />} />
-          <Route path="/services/:slug" element={<ServiceDetailPage />} /> {/* New Service Detail Page Route */}
+          <Route path="/services/:slug" element={<ServiceDetailPage />} />
           <Route path="/diy-advice" element={<DIYAdvicePage />} />
-          <Route path="/diy-advice/:slug" element={<DIYArticleDetailPage />} /> {/* New DIY Article Detail Page Route */}
-          <Route path="/wishlist" element={<WishlistPage />} /> {/* New Wishlist Page Route */}
+          <Route path="/diy-advice/:slug" element={<DIYArticleDetailPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
 
-          {/* Protected User Routes */}
+          {/* Protected User Routes (Customer/General User) */}
           <Route
             path="/account"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="customer"> {/* Explicitly require customer role */}
                 <AccountDashboardPage />
               </ProtectedRoute>
             }
@@ -142,7 +153,7 @@ export function AppRoutes() {
           <Route
             path="/checkout"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="customer"> {/* Explicitly require customer role */}
                 <CheckoutPage />
               </ProtectedRoute>
             }
@@ -157,10 +168,10 @@ export function AppRoutes() {
           <Route
             path="/admin/*"
             element={
-              <ProtectedRoute adminOnly>
+              <ProtectedRoute requiredRole="admin"> {/* Explicitly require admin role */}
                 <AdminLayout>
                   <Routes>
-                    <Route index element={<AdminDashboardPage />} /> {/* Use the new AdminDashboardPage */}
+                    <Route index element={<AdminDashboardPage />} />
                     {/* Admin Product Routes */}
                     <Route path="products" element={<AdminProductListPage />} />
                     <Route path="products/new" element={<AdminAddProductPage />} />
@@ -196,9 +207,32 @@ export function AppRoutes() {
               </ProtectedRoute>
             }
           />
+
+          {/* NEW: Seller Protected Routes */}
+          <Route
+            path="/seller/*"
+            element={
+              <SellerProtectedRoute> {/* Use the new SellerProtectedRoute */}
+                <SellerLayout> {/* Use the new SellerLayout */}
+                  <Routes>
+                    <Route index element={<SellerDashboardPage />} /> {/* NEW */}
+                    <Route path="products" element={<SellerProductListPage />} /> {/* NEW */}
+                    <Route path="products/new" element={<SellerAddProductPage />} /> {/* NEW */}
+                    <Route path="products/:id/edit" element={<SellerEditProductPage />} /> {/* NEW */}
+                    <Route path="categories" element={<SellerCategoryDepartmentListPage />} /> {/* NEW */}
+                    <Route path="categories/new-department" element={<SellerAddDepartmentPage />} /> {/* NEW */}
+                    <Route path="categories/departments/:id/edit" element={<SellerEditDepartmentPage />} /> {/* NEW */}
+                    <Route path="categories/new-category" element={<SellerAddCategoryPage />} /> {/* NEW */}
+                    <Route path="categories/categories/:id/edit" element={<SellerEditCategoryPage />} /> {/* NEW */}
+                    <Route path="settings" element={<SellerSettingsPage />} /> {/* NEW */}
+                  </Routes>
+                </SellerLayout>
+              </SellerProtectedRoute>
+            }
+          />
         </Routes>
       </main>
-      {!isAdminRoute && !isAuthRoute && <Footer />}
+      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Footer />} {/* Update Footer condition */}
       <MiniCart />
     </div>
   );
