@@ -17,6 +17,8 @@ import { ProductDetailPage } from './pages/ProductDetailPage';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { useApp } from './contexts/AppContext';
+import { SellerRegisterPage } from './pages/SellerRegisterPage';
+
 
 // Import new admin product pages
 import { AdminProductListPage } from './pages/AdminProductListPage';
