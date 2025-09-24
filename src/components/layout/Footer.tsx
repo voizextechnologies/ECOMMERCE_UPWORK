@@ -28,6 +28,8 @@ export function Footer() {
               <li><Link to="/services" className="hover:text-white transition-colors">Services</Link></li>
               <li><Link to="/diy-advice" className="hover:text-white transition-colors">DIY Advice</Link></li>
               <li><Link to="/find-a-store" className="hover:text-white transition-colors">Find a Store</Link></li>
+              <li><Link to="/seller-register" className="hover:text-white transition-colors">Become a Seller</Link></li>
+
             </ul>
           </div>
 
