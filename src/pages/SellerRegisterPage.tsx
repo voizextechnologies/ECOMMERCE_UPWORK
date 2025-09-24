@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 
-export function RegisterPage() {
+export function SellerRegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -25,6 +25,8 @@ export function RegisterPage() {
           data: {
             first_name: firstName,
             last_name: lastName,
+
+            role: 'seller', // Add this line
           },
         },
       });
