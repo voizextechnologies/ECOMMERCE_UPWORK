@@ -142,6 +142,8 @@ export function AppRoutes() {
           <Route path="/diy-advice" element={<DIYAdvicePage />} />
           <Route path="/diy-advice/:slug" element={<DIYArticleDetailPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/seller-register" element={<SellerRegisterPage />} />
+
 
           {/* Protected User Routes (Customer/General User) */}
           <Route
