@@ -16,17 +16,40 @@ export function LoginPage() {
     setError(null);
 
     try {
+      // Attempt to sign in with email and password
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
       if (signInError) {
         throw signInError;
       }
 
-      // Redirect to account dashboard after successful login
-      navigate('/account');
+      // Fetch the authenticated user's information
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error('Failed to retrieve user information after login.');
+      }
+
+      // Fetch the user's role from user_profiles
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle(); // Using maybeSingle() to handle cases where profile might not exist
+
+      if (profileError || !profile) {
+        throw new Error('Failed to retrieve user profile after login.');
+      }
+
+      // Redirect based on user role
+      if (profile.role === 'admin') {
+        navigate('/admin');
+      } else if (profile.role === 'seller') {
+        navigate('/seller');
+      } else {
+        navigate('/account'); // Default for 'customer' or other roles
+      }
     } catch (error: any) {
       setError(error.message || 'An error occurred during login');
     } finally {
@@ -89,7 +112,6 @@ export function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
           <div>
             <Button
               type="submit"
