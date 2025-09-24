@@ -159,6 +159,7 @@ export function SellerRegisterPage() {
               className="w-full"
             >
               {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Registering as Seller...' : 'Register as Seller'}
             </Button>
           </div>
         </form>
