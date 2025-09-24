@@ -57,7 +57,7 @@ export function SellerRegisterPage() {
       }
 
       // Redirect to account dashboard after successful registration
-      navigate('/account');
+      navigate('/seller');
     } catch (error: any) {
       setError(error.message || 'An error occurred during registration');
     } finally {
