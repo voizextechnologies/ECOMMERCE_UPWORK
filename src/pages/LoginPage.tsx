@@ -1,3 +1,4 @@
+// src/pages/LoginPage.tsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -70,7 +71,14 @@ export function LoginPage() {
               to="/register"
               className="font-medium text-brown-600 hover:text-brown-500"
             >
-              create a new account
+              create a new customer account
+            </Link>
+            <br />
+            <Link
+              to="/seller-register"
+              className="font-medium text-brown-600 hover:text-brown-500"
+            >
+              Register as a Seller
             </Link>
           </p>
         </div>
