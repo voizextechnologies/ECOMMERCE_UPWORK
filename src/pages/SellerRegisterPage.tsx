@@ -44,6 +44,7 @@ export function SellerRegisterPage() {
               id: user.id,
               first_name: firstName,
               last_name: lastName,
+              role: 'seller', // Add this line
             });
 
           if (profileError) {
