@@ -1,3 +1,4 @@
+// src/pages/RegisterPage.tsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -76,6 +77,13 @@ export function RegisterPage() {
               className="font-medium text-brown-600 hover:text-brown-500"
             >
               sign in to your existing account
+            </Link>
+            <br />
+            <Link
+              to="/seller-register"
+              className="font-medium text-brown-600 hover:text-brown-500"
+            >
+              Register as a Seller
             </Link>
           </p>
         </div>
