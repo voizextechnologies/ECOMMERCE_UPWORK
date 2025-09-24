@@ -158,7 +158,7 @@ export function SellerRegisterPage() {
               disabled={loading}
               className="w-full"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'Registering as Seller...' : 'Register as Seller'}
             </Button>
           </div>
         </form>
