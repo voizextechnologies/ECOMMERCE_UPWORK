@@ -1,8 +1,7 @@
-// src/contexts/AppContext.tsx
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { CartItem, Product, ProductVariant, User } from '../types';
 import { supabase } from '../lib/supabase';
-import { useCart, useWishlist } from '../hooks/useSupabase'; // Import useCart and useWishlist
+import { useCart, useWishlist } from '../hooks/useSupabase';
 
 interface AppState {
   user: User | null;
@@ -51,22 +50,16 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const newCartState = { ...state, isCartOpen: !state.isCartOpen };
       console.log('appReducer: TOGGLE_CART - After:', newCartState.isCartOpen);
       return newCartState;
-
     case 'CLOSE_CART':
       return { ...state, isCartOpen: false };
-
     case 'TOGGLE_MENU':
       return { ...state, isMenuOpen: !state.isMenuOpen };
-
     case 'CLOSE_MENU':
       return { ...state, isMenuOpen: false };
-
     case 'SET_USER':
       return { ...state, user: action.payload };
-
     case 'SET_AUTH_LOADING':
       return { ...state, authLoading: action.payload };
-
     default:
       return state;
   }
@@ -82,7 +75,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     removeFromCart,
     updateQuantity,
   } = useCart(state.user?.id || null);
-
   const {
     wishlistItems,
     loading: wishlistLoading,
@@ -95,21 +87,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async function getUserSession() {
       dispatch({ type: 'SET_AUTH_LOADING', payload: true });
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
       if (sessionError) {
         console.error('Error getting session:', sessionError);
         dispatch({ type: 'SET_USER', payload: null });
         dispatch({ type: 'SET_AUTH_LOADING', payload: false });
         return;
       }
-
       if (session?.user) {
         const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
           .select('first_name, last_name, role')
           .eq('id', session.user.id)
-          .single();
-
+          .maybeSingle(); // Changed from .single() to .maybeSingle()
         if (profileError) {
           console.error('Error fetching user profile:', profileError);
           dispatch({ type: 'SET_USER', payload: null });
@@ -133,9 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       dispatch({ type: 'SET_AUTH_LOADING', payload: false });
     }
-
     getUserSession();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -144,7 +131,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .from('user_profiles')
           .select('first_name, last_name, role')
           .eq('id', session.user.id)
-          .single()
+          .maybeSingle() // Changed from .single() to .maybeSingle()
           .then(({ data: profile, error: profileError }) => {
             if (profileError) {
               console.error('Error fetching user profile on auth change:', profileError);
@@ -170,7 +157,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       dispatch({ type: 'SET_AUTH_LOADING', payload: false });
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -194,7 +180,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     wishlistLoading,
     wishlistError,
   }), [state, dispatch, cartItems, addToCart, removeFromCart, updateQuantity, cartLoading, cartError, wishlistItems, addToWishlist, removeFromWishlist, wishlistLoading, wishlistError]);
-
 
   return (
     <AppContext.Provider value={contextValue}>
