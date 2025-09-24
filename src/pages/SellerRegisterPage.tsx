@@ -71,14 +71,15 @@ export function SellerRegisterPage() {
         <div>
           <h2 className="text-2xl font-bold text-brown-900 mb-6 text-center">Register as a Seller</h2>
           <p className="mt-2 text-center text-sm text-brown-600">
-            Or{' '}
-            <Link
-              to="/login"
-              className="font-medium text-brown-600 hover:text-brown-500"
-            >
-              sign in to your existing account
-            </Link>
-          </p>
+  Or{' '}
+  <Link
+    to="/login"
+    className="font-medium text-brown-600 hover:text-brown-500"
+  >
+    Already a seller? Sign in here
+  </Link>
+</p>
+
         </div>
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
