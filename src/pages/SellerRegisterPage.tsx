@@ -69,9 +69,7 @@ export function SellerRegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-brown-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div>
-          <h2 className="text-2xl font-bold text-brown-900 mb-6 text-center">
-            Create your account
-          </h2>
+          <h2 className="text-2xl font-bold text-brown-900 mb-6 text-center">Register as a Seller</h2>
           <p className="mt-2 text-center text-sm text-brown-600">
             Or{' '}
             <Link
