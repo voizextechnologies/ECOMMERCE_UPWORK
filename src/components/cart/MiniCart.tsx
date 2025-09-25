@@ -25,7 +25,7 @@ export function MiniCart() {
       <div className="absolute right-0 top-0 h-full w-96 max-w-full bg-white shadow-xl">
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-brown-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-brown-200 sticky top-0 z-10 bg-white">
             <div className="flex items-center">
               <ShoppingCart className="w-5 h-5 text-brown-900 mr-2" />
               <h2 className="text-lg font-semibold text-brown-900">
