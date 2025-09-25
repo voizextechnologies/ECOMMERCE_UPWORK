@@ -48,7 +48,7 @@ export function ServiceDetailPage() {
       <div className="container mx-auto px-4">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <img
-            src={service.image || 'https://placehold.co/800x400?text=Service+Image'}
+            src={service.image || 'https://via.placeholder.com/800x400?text=Service+Image'}
             alt={service.name}
             className="w-full h-96 object-cover rounded-lg mb-6"
           />

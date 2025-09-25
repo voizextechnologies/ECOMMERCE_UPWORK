@@ -58,7 +58,7 @@ export function ServicesPage() {
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={service.image || 'https://placehold.co/400x300?text=Service+Image'}
+                    src={service.image || 'https://via.placeholder.com/400x300?text=Service+Image'}
                     alt={service.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />

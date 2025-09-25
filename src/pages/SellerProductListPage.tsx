@@ -159,7 +159,7 @@ export function SellerProductListPage() {
               <div key={product.id} className="bg-white rounded-lg shadow-md p-4">
                 <div className="flex items-center mb-4">
                   <img
-                    src={product.images[0] || 'https://placehold.co/60'}
+                    src={product.images[0] || 'https://via.placeholder.com/60'}
                     alt={product.name}
                     className="w-16 h-16 rounded-lg object-cover mr-4"
                   />
