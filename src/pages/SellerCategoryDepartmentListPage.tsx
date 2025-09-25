@@ -11,7 +11,7 @@ export function SellerCategoryDepartmentListPage() {
   const { state: { user } } = useApp();
   const userId = user?.id || null;
 
-  const { loading, error, fetchAllDepartmentsWithCategories, deleteDepartment, deleteCategory } = useSellerCategories(userId);
+  const { loading, error, fetchAllDepartmentsWithCategories, deleteCategory } = useSellerCategories(userId);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [refresh, setRefresh] = useState(false);
 
@@ -26,16 +26,7 @@ export function SellerCategoryDepartmentListPage() {
     getDepartments();
   }, [refresh, fetchAllDepartmentsWithCategories, userId]);
 
-  const handleDeleteDepartment = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete the department "${name}"? This will also delete all associated categories.`)) {
-      const success = await deleteDepartment(id);
-      if (success) {
-        setRefresh(prev => !prev);
-      } else {
-        alert('Failed to delete department.');
-      }
-    }
-  };
+  // REMOVED: handleDeleteDepartment function
 
   const handleDeleteCategory = async (id: string, name: string) => {
     if (window.confirm(`Are you sure you want to delete the category "${name}"?`)) {
@@ -61,12 +52,7 @@ export function SellerCategoryDepartmentListPage() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-brown-900">My Categories & Departments</h2>
         <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0">
-          <Link to="/seller/categories/new-department">
-            <Button>
-              <PlusCircle className="w-5 h-5 mr-2" />
-              Add New Department
-            </Button>
-          </Link>
+          {/* REMOVED: Add New Department Button */}
           <Link to="/seller/categories/new-category">
             <Button>
               <PlusCircle className="w-5 h-5 mr-2" />
@@ -85,14 +71,8 @@ export function SellerCategoryDepartmentListPage() {
               <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
                 <h3 className="text-xl font-semibold text-brown-900">{department.name}</h3>
                 <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0">
-                  <Link to={`/seller/categories/departments/${department.id}/edit`}>
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-4 h-4 mr-1" /> Edit Department
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" onClick={() => handleDeleteDepartment(department.id, department.name)} className="text-red-600 hover:text-red-900">
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete Department
-                  </Button>
+                  {/* REMOVED: Edit Department Button */}
+                  {/* REMOVED: Delete Department Button */}
                 </div>
               </div>
               <div className="p-4">
@@ -181,3 +161,4 @@ export function SellerCategoryDepartmentListPage() {
     </div>
   );
 }
+
