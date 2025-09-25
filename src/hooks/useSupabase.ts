@@ -503,7 +503,7 @@ export function useAdminProducts() {
         console.error('useAdminProducts: Supabase fetch error for single product:', error);
         throw error;
       }
-      console.log(\`useAdminProducts: Product ${id} fetched successfully.`);
+      console.log(`useAdminProducts: Product ${id} fetched successfully.`);
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch product';
