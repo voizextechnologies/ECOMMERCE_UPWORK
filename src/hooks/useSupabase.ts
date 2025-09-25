@@ -1,3 +1,4 @@
+```typescript
 // src/hooks/useSupabase.ts
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -1821,20 +1822,32 @@ export function useSellerSettings(sellerId: string | null) {
         return;
       }
       setLoading(true);
-      setError(null);
+      setError(null); // Clear error at the start of fetch
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase // Renamed error to fetchError to avoid confusion
           .from('seller_settings')
           .select('*')
           .eq('seller_id', sellerId)
           .single();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-          throw error;
+        if (fetchError) {
+          if (fetchError.code === 'PGRST116') {
+            // No rows found, which is expected for new sellers. Treat as no settings yet.
+            setSettings(null);
+            setError(null); // Explicitly ensure no error is set for this case
+          } else {
+            // A real error occurred
+            throw fetchError; // Propagate other errors to the catch block
+          }
+        } else {
+          // Data was successfully fetched
+          setSettings(data);
+          setError(null); // Ensure no error is set
         }
-        setSettings(data);
       } catch (err) {
+        // Catch any thrown errors (including non-PGRST116 fetchErrors)
         setError(err instanceof Error ? err.message : 'Failed to fetch seller settings');
+        setSettings(null); // Ensure settings are null on error
       } finally {
         setLoading(false);
       }
@@ -1873,3 +1886,4 @@ export function useSellerSettings(sellerId: string | null) {
     upsertSettings,
   };
 }
+```
