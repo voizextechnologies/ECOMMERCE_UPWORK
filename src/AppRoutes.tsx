@@ -49,7 +49,7 @@ import { AdminEditUserPage } from './pages/AdminEditUserPage';
 
 // Import new admin pages for DIY Articles
 import { AdminDIYArticleListPage } from './pages/AdminDIYArticleListPage';
-import { AdminAddDIYArticlePage } => './pages/AdminAddDIYArticlePage';
+import { AdminAddDIYArticlePage } from './pages/AdminAddDIYArticlePage';
 import { AdminEditDIYArticlePage } from './pages/AdminEditDIYArticlePage';
 
 // Import new admin pages for Services
