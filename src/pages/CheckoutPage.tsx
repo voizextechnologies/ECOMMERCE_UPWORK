@@ -266,7 +266,7 @@ export function CheckoutPage() {
               {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center py-4">
                   <img
-                    src={item.products.images[0]}
+                    src={item.products.images[0] || 'https://placehold.co/80?text=Product'}
                     alt={item.products.name}
                     className="w-20 h-20 object-cover rounded-lg border border-brown-200"
                   />

@@ -47,7 +47,7 @@ export function WishlistPage() {
               <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
                 <Link to={`/products/${item.products.slug}`} className="block relative">
                   <img
-                    src={item.products.images[0]}
+                    src={item.products.images[0] || 'https://placehold.co/400x300?text=Product'}
                     alt={item.products.name}
                     className="w-full h-48 object-cover"
                   />

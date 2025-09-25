@@ -61,7 +61,7 @@ export function TrendingProducts() {
               <Link to={`/products/${product.slug}`} className="block"> {/* Wrap image and title with Link */}
                 <div className="relative">
                   <img
-                    src={product.images[0]}
+                    src={product.images[0] || 'https://placehold.co/400x300?text=Product'}
                     alt={product.name}
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />

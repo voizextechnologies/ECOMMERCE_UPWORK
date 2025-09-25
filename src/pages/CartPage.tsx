@@ -35,7 +35,7 @@ export function CartPage() {
                   <div key={item.id} className="flex items-center py-4">
                     <Link to={`/products/${item.products.slug}`} className="flex-shrink-0">
                       <img
-                        src={item.products.images[0]}
+                        src={item.products.images[0] || 'https://placehold.co/96?text=Product'}
                         alt={item.products.name}
                         className="w-24 h-24 object-cover rounded-lg border border-brown-200"
                       />
