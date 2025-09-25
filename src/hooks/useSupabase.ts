@@ -122,7 +122,7 @@ export function useProducts(options?: UseProductsOptions) {
 
         if (options?.searchQuery) {
           query = query.or(
-            `name.ilike.%${options.searchQuery}%,description.ilike.%${options.searchQuery}%`
+            \`name.ilike.%${options.searchQuery}%,description.ilike.%${options.searchQuery}%`
           );
         }
 
@@ -504,7 +504,7 @@ export function useAdminProducts() {
         console.error('useAdminProducts: Supabase fetch error for single product:', error);
         throw error;
       }
-      console.log(`useAdminProducts: Product ${id} fetched successfully.`);
+      console.log(\`useAdminProducts: Product ${id} fetched successfully.`);
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch product';
@@ -1077,7 +1077,7 @@ export function useSellerCategories(sellerId: string | null) {
         .from('categories')
         .select('*')
         .eq('id', id)
-        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure category is global or seller's own
+        .or(\`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure category is global or seller's own
         .single();
       if (error) throw error;
       return data;
