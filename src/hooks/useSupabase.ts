@@ -121,7 +121,7 @@ export function useProducts(options?: UseProductsOptions) {
 
         if (options?.searchQuery) {
           query = query.or(
-            \`name.ilike.%${options.searchQuery}%,description.ilike.%${options.searchQuery}%`
+            `name.ilike.%${options.searchQuery}%,description.ilike.%${options.searchQuery}%`
           );
         }
 
