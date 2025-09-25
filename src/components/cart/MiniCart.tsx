@@ -1,4 +1,3 @@
-```tsx
 import React from 'react';
 import { X, ShoppingCart, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -135,4 +134,3 @@ export function MiniCart() {
     </div>
   );
 }
-```
