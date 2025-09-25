@@ -9,7 +9,7 @@ export function Header() {
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <header className="bg-brown-900 text-brown-100 shadow-lg">
+    <header className="bg-brown-900 text-brown-100 shadow-lg sticky top-0 z-50">
       {/* Top bar */}
       <div className="bg-brown-500 text-brown-900 border-b border-brown-600"> {/* Added border-b */}
         <div className="container mx-auto px-4 py-3"> {/* Increased py */}
