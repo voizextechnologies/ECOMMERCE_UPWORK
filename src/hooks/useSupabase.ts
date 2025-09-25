@@ -1076,7 +1076,7 @@ export function useSellerCategories(sellerId: string | null) {
         .from('categories')
         .select('*')
         .eq('id', id)
-        .or(\`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure category is global or seller's own
+        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure category is global or seller's own
         .single();
       if (error) throw error;
       return data;
