@@ -48,7 +48,7 @@ export function DIYArticleDetailPage() {
       <div className="container mx-auto px-4">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <img
-            src={article.featured_image || 'https://via.placeholder.com/800x400?text=Featured+Image'}
+            src={article.featured_image || 'https://placehold.co/800x400?text=Featured+Image'}
             alt={article.title}
             className="w-full h-96 object-cover rounded-lg mb-6"
           />

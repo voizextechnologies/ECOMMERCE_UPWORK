@@ -120,7 +120,7 @@ export function AdminOrderDetailPage() {
           <div className="divide-y divide-gray-200">
             {order.order_items.map((item: any) => (
               <div key={item.id} className="flex items-center py-3">
-                <img src={item.products?.images[0] || 'https://via.placeholder.com/50'} alt={item.products?.name} className="w-12 h-12 object-cover rounded mr-4" />
+                <img src={item.products?.images[0] || 'https://placehold.co/50'} alt={item.products?.name} className="w-12 h-12 object-cover rounded mr-4" />
                 <div className="flex-1">
                   <p className="font-medium text-brown-900">{item.products?.name}</p>
                   {item.product_variants && <p className="text-sm text-gray-600">Variant: {item.product_variants.name}</p>}

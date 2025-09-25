@@ -252,7 +252,7 @@ export function AdminDashboardPage() {
             <ul className="divide-y divide-brown-100">
               {recentProducts.map((product) => (
                 <li key={product.id} className="py-3 flex items-center">
-                  <img src={product.images[0] || 'https://via.placeholder.com/40'} alt={product.name} className="w-10 h-10 object-cover rounded mr-4" />
+                  <img src={product.images[0] || 'https://placehold.co/40'} alt={product.name} className="w-10 h-10 object-cover rounded mr-4" />
                   <div className="flex-1">
                     <p className="font-medium text-brown-900">{product.name}</p>
                     <p className="text-sm text-brown-600">${product.price.toFixed(2)}</p>
