@@ -71,7 +71,7 @@ export function DIYAdvicePage() {
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={article.featuredImage || 'https://placehold.co/400x300?text=Article+Image'}
+                    src={article.featuredImage || 'https://via.placeholder.com/400x300?text=Article+Image'}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />

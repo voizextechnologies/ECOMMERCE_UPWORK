@@ -89,7 +89,7 @@ export function OrderHistory() {
             {order.order_items.map((item: any) => (
               <div key={item.id} className="flex items-center">
                 <img
-                  src={item.products?.images[0] || 'https://placehold.co/50'}
+                  src={item.products?.images[0] || 'https://via.placeholder.com/50'}
                   alt={item.products?.name}
                   className="w-16 h-16 object-cover rounded-lg mr-4"
                 />

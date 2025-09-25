@@ -63,7 +63,7 @@ export function FeaturedCategoriesWeek() {
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={category.image || 'https://placehold.co/400x300?text=No+Image'} // Fallback image
+                    src={category.image || 'https://via.placeholder.com/400x300?text=No+Image'} // Fallback image
                     alt={category.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
