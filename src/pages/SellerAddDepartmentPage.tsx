@@ -1,4 +1,3 @@
-```typescript
 // src/pages/SellerAddDepartmentPage.tsx
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom'; // Import Link
@@ -42,5 +41,3 @@ export function SellerAddDepartmentPage() {
     </div>
   );
 }
-
-```
