@@ -14,6 +14,7 @@ interface UseProductsOptions {
   brand?: string;
   limit?: number;
   offset?: number;
+  sellerId?: string; // NEW: Add sellerId to options
 }
 
 // Hook for fetching products with filtering, searching, and pagination
@@ -113,6 +114,9 @@ export function useProducts(options?: UseProductsOptions) {
         }
         if (options?.maxPrice !== undefined) {
           query = query.lte('price', options.maxPrice);
+        }
+        if (options?.sellerId) { // NEW: Filter by sellerId
+          query = query.eq('seller_id', options.sellerId);
         }
 
         if (options?.searchQuery) {
@@ -515,7 +519,6 @@ export function useAdminProducts() {
     setLoading(true);
     setError(null);
     try {
-      console.log('useAdminProducts: Attempting to add product:', productData.name);
       const { data, error } = await supabase
         .from('products')
         .insert(productData)
@@ -957,7 +960,7 @@ export function useSellerCategories(sellerId: string | null) {
             product_count
           )
         `)
-        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Fetch global and seller's own departments
+        // REMOVED: .or(`seller_id.eq.${sellerId},seller_id.is.null`)
         .order('name', { ascending: true });
 
       if (error) throw error;
@@ -982,7 +985,7 @@ export function useSellerCategories(sellerId: string | null) {
         .from('departments')
         .select('*')
         .eq('id', id)
-        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure department is global or seller's own
+        // REMOVED: .or(`seller_id.eq.${sellerId},seller_id.is.null`)
         .single();
       if (error) throw error;
       return data;
@@ -994,76 +997,8 @@ export function useSellerCategories(sellerId: string | null) {
     }
   }, [sellerId]);
 
-  const addDepartment = useCallback(async (departmentData: Tables['departments']['Insert']) => {
-    if (!sellerId) {
-      setError('Seller ID is required to add department.');
-      return null;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('departments')
-        .insert({ ...departmentData, seller_id: sellerId }) // Assign seller_id
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add department');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [sellerId]);
-
-  const updateDepartment = useCallback(async (id: string, departmentData: Tables['departments']['Update']) => {
-    if (!sellerId) {
-      setError('Seller ID is required to update department.');
-      return null;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('departments')
-        .update(departmentData)
-        .eq('id', id)
-        .eq('seller_id', sellerId) // Ensure department belongs to seller
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update department');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [sellerId]);
-
-  const deleteDepartment = useCallback(async (id: string) => {
-    if (!sellerId) {
-      setError('Seller ID is required to delete department.');
-      return false;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { error } = await supabase
-        .from('departments')
-        .delete()
-        .eq('id', id)
-        .eq('seller_id', sellerId); // Ensure department belongs to seller
-      if (error) throw error;
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete department');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [sellerId]);
+  // REMOVED: addDepartment, updateDepartment, deleteDepartment functions from here
+  // Sellers should not manage departments directly.
 
   const fetchCategoryById = useCallback(async (id: string) => {
     if (!sellerId) {
@@ -1165,9 +1100,9 @@ export function useSellerCategories(sellerId: string | null) {
     error,
     fetchAllDepartmentsWithCategories,
     fetchDepartmentById,
-    addDepartment,
-    updateDepartment,
-    deleteDepartment,
+    // addDepartment, // Removed
+    // updateDepartment, // Removed
+    // deleteDepartment, // Removed
     fetchCategoryById,
     addCategory,
     updateCategory,
