@@ -53,7 +53,7 @@ export function MiniCart() {
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center py-4 border-b border-brown-100 last:border-b-0">
                     <img
-                      src={item.products.images[0]}
+                      src={item.products.images[0] || 'https://placehold.co/64?text=Product'}
                       alt={item.products.name}
                       className="w-16 h-16 object-cover rounded border border-brown-200"
                     />
