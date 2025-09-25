@@ -1,3 +1,4 @@
+// src/pages/ShopPage/index.tsx
 import React from 'react';
 import { ShopSearchBar } from '../../components/shop/ShopSearchBar';
 import { ShopFilters } from '../../components/shop/ShopFilters';
@@ -18,6 +19,7 @@ export function ShopPage() {
   const brands = searchParams.getAll('brand');
   const currentPage = Number(searchParams.get('page')) || 1;
   const offset = (currentPage - 1) * itemsPerPage;
+  const sellerId = searchParams.get('seller') || undefined; // NEW: Get sellerId from search params
 
   const { totalCount } = useProducts({
     categorySlug,
@@ -28,6 +30,7 @@ export function ShopPage() {
     brand: brands.length > 0 ? brands[0] : undefined,
     limit: itemsPerPage,
     offset,
+    sellerId, // NEW: Pass sellerId to useProducts hook
   });
 
   return (
@@ -48,3 +51,4 @@ export function ShopPage() {
     </div>
   );
 }
+
