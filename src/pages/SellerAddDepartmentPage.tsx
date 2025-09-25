@@ -1,6 +1,6 @@
 // src/pages/SellerAddDepartmentPage.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import { DepartmentForm } from '../components/admin/DepartmentForm'; // Re-use existing form
 import { useSellerCategories } from '../hooks/useSupabase'; // Use new seller hook
 import { Department } from '../types';
@@ -30,7 +30,12 @@ export function SellerAddDepartmentPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-brown-900 mb-6">Add New Department</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-brown-900">Add New Department</h2>
+        <Link to="/seller/categories">
+          <Button variant="outline">Back to Categories</Button>
+        </Link>
+      </div>
       <DepartmentForm onSubmit={handleSubmit} loading={loading} error={error} />
     </div>
   );

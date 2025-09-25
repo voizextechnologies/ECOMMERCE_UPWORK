@@ -960,9 +960,7 @@ export function useSellerCategories(sellerId: string | null) {
             product_count
           )
         `)
-        // REMOVED: .or(`seller_id.eq.${sellerId},seller_id.is.null`)
         .order('name', { ascending: true });
-
       if (error) throw error;
       return data;
     } catch (err) {
@@ -985,7 +983,6 @@ export function useSellerCategories(sellerId: string | null) {
         .from('departments')
         .select('*')
         .eq('id', id)
-        // REMOVED: .or(`seller_id.eq.${sellerId},seller_id.is.null`)
         .single();
       if (error) throw error;
       return data;
@@ -997,8 +994,75 @@ export function useSellerCategories(sellerId: string | null) {
     }
   }, [sellerId]);
 
-  // REMOVED: addDepartment, updateDepartment, deleteDepartment functions from here
-  // Sellers should not manage departments directly.
+  // RE-INTRODUCED: addDepartment, updateDepartment, deleteDepartment functions
+  const addDepartment = useCallback(async (departmentData: Tables['departments']['Insert']) => {
+    if (!sellerId) { // This check is not strictly necessary for global departments but can remain for consistency
+      setError('Seller ID is required to add department.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .insert(departmentData)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]); // sellerId is not directly used in the query but is a dependency for useCallback
+
+  const updateDepartment = useCallback(async (id: string, departmentData: Tables['departments']['Update']) => {
+    if (!sellerId) { // This check is not strictly necessary for global departments but can remain for consistency
+      setError('Seller ID is required to update department.');
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .update(departmentData)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update department');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]); // sellerId is not directly used in the query but is a dependency for useCallback
+
+  const deleteDepartment = useCallback(async (id: string) => {
+    if (!sellerId) { // This check is not strictly necessary for global departments but can remain for consistency
+      setError('Seller ID is required to delete department.');
+      return false;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase
+        .from('departments')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete department');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [sellerId]); // sellerId is not directly used in the query but is a dependency for useCallback
 
   const fetchCategoryById = useCallback(async (id: string) => {
     if (!sellerId) {
@@ -1100,9 +1164,9 @@ export function useSellerCategories(sellerId: string | null) {
     error,
     fetchAllDepartmentsWithCategories,
     fetchDepartmentById,
-    // addDepartment, // Removed
-    // updateDepartment, // Removed
-    // deleteDepartment, // Removed
+    addDepartment, // Re-added
+    updateDepartment, // Re-added
+    deleteDepartment, // Re-added
     fetchCategoryById,
     addCategory,
     updateCategory,

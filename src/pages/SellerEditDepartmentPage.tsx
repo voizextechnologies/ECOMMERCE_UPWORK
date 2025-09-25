@@ -1,6 +1,6 @@
 // src/pages/SellerEditDepartmentPage.tsx
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom'; // Import Link
 import { DepartmentForm } from '../components/admin/DepartmentForm'; // Re-use existing form
 import { useSellerCategories } from '../hooks/useSupabase'; // Use new seller hook
 import { Department } from '../types';
@@ -59,7 +59,12 @@ export function SellerEditDepartmentPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-brown-900 mb-6">Edit Department</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-brown-900">Edit Department</h2>
+        <Link to="/seller/categories">
+          <Button variant="outline">Back to Categories</Button>
+        </Link>
+      </div>
       {initialData && (
         <DepartmentForm initialData={initialData} onSubmit={handleSubmit} loading={loading} error={error} />
       )}
