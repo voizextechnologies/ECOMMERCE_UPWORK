@@ -82,7 +82,7 @@ export function ProductDetailPage() {
           {/* Product Image Gallery */}
           <div className="flex flex-col items-center">
             <img
-              src={product.images[0]}
+              src={product.images[0] || 'https://placehold.co/600x400?text=Product'}
               alt={product.name}
               className="w-full max-w-lg h-auto rounded-lg shadow-md object-cover"
             />
@@ -91,7 +91,7 @@ export function ProductDetailPage() {
                 {product.images.map((img, index) => (
                   <img
                     key={index}
-                    src={img}
+                    src={img || 'https://placehold.co/80?text=Thumb'}
                     alt={`${product.name} thumbnail ${index + 1}`}
                     className="w-20 h-20 object-cover rounded-md cursor-pointer border-2 border-brown-500 transition-colors"
                   />
