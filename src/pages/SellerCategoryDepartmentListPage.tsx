@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useSellerCategories } from '../hooks/useSupabase'; // Use new seller hook
-import { Department, Category } fromimport { CreditCard as Edit, Trash2, PlusCircle } from 'lucide-react'lucide-react';
+import { Department, Category } from '../types'; 
+import { CreditCard as Edit, Trash2, PlusCircle } from 'lucide-react'lucide-react';
 import { useApp } from '../contexts/AppContext'; // To get current user's ID
 
 export function SellerCategoryDepartmentListPage() {
