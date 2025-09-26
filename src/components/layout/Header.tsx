@@ -1,4 +1,3 @@
-```tsx
 import React from 'react';
 import { Search, ShoppingCart, User, Menu, Heart, MapPin } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
@@ -151,4 +150,3 @@ export function Header() {
     </header>
   );
 }
-```
