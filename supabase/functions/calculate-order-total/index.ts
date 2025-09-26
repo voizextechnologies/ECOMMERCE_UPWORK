@@ -52,12 +52,12 @@ Deno.serve(async (req: Request) => {
 
       if (productError || !productData) {
         console.error('Error fetching product data:', productError?.message || 'Product not found');
-        throw new Error(`Product not found for ID: ${item.product_id}`);
+        throw new Error(\`Product not found for ID: ${item.product_id}`);
       }
 
       const sellerId = productData.seller_id;
       if (!sellerId) {
-        console.warn(`Product ${item.product_id} has no seller_id. Skipping.`);
+        console.warn(\`Product ${item.product_id} has no seller_id. Skipping.`);
         continue;
       }
 
@@ -78,7 +78,7 @@ Deno.serve(async (req: Request) => {
         .maybeSingle(); // Use maybeSingle to handle cases where settings might not exist
 
       if (settingsError) {
-        console.error(`Error fetching seller settings for ${sellerId}:`, settingsError.message);
+        console.error(\`Error fetching seller settings for ${sellerId}:`, settingsError.message);
         // Continue with default values if settings not found
       }
 
