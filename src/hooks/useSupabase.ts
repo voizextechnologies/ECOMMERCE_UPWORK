@@ -1,3 +1,4 @@
+```typescript
 // src/hooks/useSupabase.ts
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -274,8 +275,8 @@ export function useCart(userId: string | null) {
               price,
               images,
               slug,
-              discount_type,  // NEW
-              discount_value  // NEW
+              discount_type,
+              discount_value
             ),
             product_variants (
               id,
@@ -323,8 +324,8 @@ export function useCart(userId: string | null) {
           price,
           images,
           slug,
-          discount_type,  // NEW
-          discount_value  // NEW
+          discount_type,
+          discount_value
         ),
         product_variants (
           id,
@@ -1807,3 +1808,4 @@ export function useSellerSettings(sellerId: string | null) {
     upsertSettings,
   };
 }
+```
