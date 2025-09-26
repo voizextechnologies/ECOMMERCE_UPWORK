@@ -1,4 +1,3 @@
-```typescript
 // src/components/admin/ProductForm.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/Button';
@@ -399,4 +398,3 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
     </form>
   );
 }
-```
