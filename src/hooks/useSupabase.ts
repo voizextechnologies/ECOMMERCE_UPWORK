@@ -1,4 +1,3 @@
-```typescript
 // src/hooks/useSupabase.ts
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -1800,4 +1799,3 @@ export function useSellerSettings(sellerId: string | null) {
     upsertSettings,
   };
 }
-```
