@@ -1,4 +1,3 @@
-```typescript
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 
@@ -131,4 +130,3 @@ export function SellerSettingsForm({ initialData, onSubmit, loading, error }: Se
     </form>
   );
 }
-```
