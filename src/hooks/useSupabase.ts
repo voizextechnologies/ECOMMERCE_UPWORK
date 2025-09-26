@@ -665,7 +665,8 @@ export function useSellerProducts(sellerId: string | null) {
         .single();
       if (error) throw error;
       return data;
-    } catch (err) {
+    }
+    catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add product');
       return null;
     } finally {
@@ -1088,6 +1089,9 @@ export function useSellerCategories(sellerId: string | null) {
       setLoading(false);
     }
   }, [sellerId]);
+
+  // Removed addDepartment, updateDepartment, deleteDepartment as sellers cannot manage global departments
+  // These functions are not present in this hook, so no explicit removal is needed.
 
   return {
     loading,
