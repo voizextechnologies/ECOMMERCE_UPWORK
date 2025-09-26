@@ -1,3 +1,4 @@
+```typescript
 // src/hooks/useSupabase.ts
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -947,22 +948,45 @@ export function useSellerCategories(sellerId: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase
+      // Fetch all departments (global)
+      const { data: departmentsData, error: departmentsError } = await supabase
         .from('departments')
         .select(`
-          *,
-          categories (
-            id,
-            slug,
-            name,
-            description,
-            image,
-            product_count
-          )
+          id,
+          slug,
+          name,
+          description,
+          image
         `)
         .order('name', { ascending: true });
-      if (error) throw error;
-      return data;
+
+      if (departmentsError) throw departmentsError;
+
+      // Fetch categories that are either global or belong to the current seller
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select(`
+          id,
+          slug,
+          name,
+          description,
+          image,
+          product_count,
+          department_id
+        `)
+        .or(`seller_id.is.null,seller_id.eq.${sellerId}`) // Categories are global OR belong to this seller
+        .order('name', { ascending: true });
+
+      if (categoriesError) throw categoriesError;
+
+      // Manually merge categories into departments
+      const departmentsWithFilteredCategories = departmentsData?.map(dept => ({
+        ...dept,
+        categories: categoriesData?.filter(cat => cat.department_id === dept.id) || []
+      })) || [];
+
+      return departmentsWithFilteredCategories;
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch seller departments and categories');
       return null;
@@ -970,99 +994,6 @@ export function useSellerCategories(sellerId: string | null) {
       setLoading(false);
     }
   }, [sellerId]);
-
-  const fetchDepartmentById = useCallback(async (id: string) => {
-    if (!sellerId) {
-      setError('Seller ID is required to fetch department.');
-      return null;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('departments')
-        .select('*')
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch department');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [sellerId]);
-
-  // RE-INTRODUCED: addDepartment, updateDepartment, deleteDepartment functions
-  const addDepartment = useCallback(async (departmentData: Tables['departments']['Insert']) => {
-    if (!sellerId) { // This check is not strictly necessary for global departments but can remain for consistency
-      setError('Seller ID is required to add department.');
-      return null;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('departments')
-        .insert(departmentData)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add department');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [sellerId]); // sellerId is not directly used in the query but is a dependency for useCallback
-
-  const updateDepartment = useCallback(async (id: string, departmentData: Tables['departments']['Update']) => {
-    if (!sellerId) { // This check is not strictly necessary for global departments but can remain for consistency
-      setError('Seller ID is required to update department.');
-      return null;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('departments')
-        .update(departmentData)
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update department');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [sellerId]); // sellerId is not directly used in the query but is a dependency for useCallback
-
-  const deleteDepartment = useCallback(async (id: string) => {
-    if (!sellerId) { // This check is not strictly necessary for global departments but can remain for consistency
-      setError('Seller ID is required to delete department.');
-      return false;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { error } = await supabase
-        .from('departments')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete department');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [sellerId]); // sellerId is not directly used in the query but is a dependency for useCallback
 
   const fetchCategoryById = useCallback(async (id: string) => {
     if (!sellerId) {
@@ -1163,10 +1094,6 @@ export function useSellerCategories(sellerId: string | null) {
     loading,
     error,
     fetchAllDepartmentsWithCategories,
-    fetchDepartmentById,
-    addDepartment, // Re-added
-    updateDepartment, // Re-added
-    deleteDepartment, // Re-added
     fetchCategoryById,
     addCategory,
     updateCategory,
@@ -1873,3 +1800,4 @@ export function useSellerSettings(sellerId: string | null) {
     upsertSettings,
   };
 }
+```

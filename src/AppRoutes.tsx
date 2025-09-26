@@ -1,3 +1,4 @@
+```typescript
 // src/AppRoutes.tsx
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
@@ -74,8 +75,8 @@ import { SellerProductListPage } from './pages/SellerProductListPage'; // NEW
 import { SellerAddProductPage } from './pages/SellerAddProductPage'; // NEW
 import { SellerEditProductPage } from './pages/SellerEditProductPage'; // NEW
 import { SellerCategoryDepartmentListPage } from './pages/SellerCategoryDepartmentListPage'; // NEW
-import { SellerAddDepartmentPage } from './pages/SellerAddDepartmentPage'; // NEW
-import { SellerEditDepartmentPage } from './pages/SellerEditDepartmentPage'; // NEW
+// Removed: import { SellerAddDepartmentPage } from './pages/SellerAddDepartmentPage'; // NEW
+// Removed: import { SellerEditDepartmentPage } from './pages/SellerEditDepartmentPage'; // NEW
 import { SellerAddCategoryPage } from './pages/SellerAddCategoryPage'; // NEW
 import { SellerEditCategoryPage } from './pages/SellerEditCategoryPage'; // NEW
 import { SellerSettingsPage } from './pages/SellerSettingsPage'; // NEW
@@ -224,8 +225,8 @@ export function AppRoutes() {
                     <Route path="products/new" element={<SellerAddProductPage />} /> {/* NEW */}
                     <Route path="products/:id/edit" element={<SellerEditProductPage />} /> {/* NEW */}
                     <Route path="categories" element={<SellerCategoryDepartmentListPage />} /> {/* NEW */}
-                    <Route path="categories/new-department" element={<SellerAddDepartmentPage />} /> {/* NEW */}
-                    <Route path="categories/departments/:id/edit" element={<SellerEditDepartmentPage />} /> {/* NEW */}
+                    {/* Removed: <Route path="categories/new-department" element={<SellerAddDepartmentPage />} /> */}
+                    {/* Removed: <Route path="categories/departments/:id/edit" element={<SellerEditDepartmentPage />} /> */}
                     <Route path="categories/new-category" element={<SellerAddCategoryPage />} /> {/* NEW */}
                     <Route path="categories/categories/:id/edit" element={<SellerEditCategoryPage />} /> {/* NEW */}
                     <Route path="settings" element={<SellerSettingsPage />} /> {/* NEW */}
@@ -241,3 +242,4 @@ export function AppRoutes() {
     </div>
   );
 }
+```
