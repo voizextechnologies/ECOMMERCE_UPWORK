@@ -29,7 +29,7 @@ export function SellerCategoryDepartmentListPage() {
   // Removed handleDeleteDepartment as sellers cannot delete departments
 
   const handleDeleteCategory = async (id: string, name: string) => {
-    if (window.confirm(\`Are you sure you want to delete the category "${name}"?`)) {
+    if (window.confirm(`Are you sure you want to delete the category "${name}"?`)) {
       const success = await deleteCategory(id);
       if (success) {
         setRefresh(prev => !prev);
