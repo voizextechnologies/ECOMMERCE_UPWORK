@@ -97,7 +97,7 @@ export function useProducts(options?: UseProductsOptions) {
               first_name,
               last_name
             )
-          `, // ADDED seller profile
+          `,
             { count: 'exact' }
           );
 
@@ -122,7 +122,7 @@ export function useProducts(options?: UseProductsOptions) {
 
         if (options?.searchQuery) {
           query = query.or(
-            \`name.ilike.%${options.searchQuery}%,description.ilike.%${options.searchQuery}%`
+            `name.ilike.%${options.searchQuery}%,description.ilike.%${options.searchQuery}%`
           );
         }
 
@@ -196,7 +196,10 @@ export function useProduct(slug: string) {
 
   useEffect(() => {
     async function fetchProduct() {
-      if (!slug) return;
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
 
       try {
         const { data, error } = await supabase
@@ -226,7 +229,7 @@ export function useProduct(slug: string) {
               first_name,
               last_name
             )
-          ` // ADDED seller profile
+          `
           )
           .eq('slug', slug)
           .single();
@@ -271,7 +274,9 @@ export function useCart(userId: string | null) {
               name,
               price,
               images,
-              slug
+              slug,
+              discount_type,  // NEW
+              discount_value  // NEW
             ),
             product_variants (
               id,
@@ -318,7 +323,9 @@ export function useCart(userId: string | null) {
           name,
           price,
           images,
-          slug
+          slug,
+          discount_type,  // NEW
+          discount_value  // NEW
         ),
         product_variants (
           id,
@@ -467,7 +474,7 @@ export function useAdminProducts() {
           categories!category_id (name),
           departments!department_id (name),
           seller:user_profiles!seller_id (first_name, last_name)
-        `) // ADDED seller profile
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -497,14 +504,14 @@ export function useAdminProducts() {
           categories!category_id (id, name),
           departments!department_id (id, name),
           seller:user_profiles!seller_id (id, first_name, last_name)
-        `) // ADDED seller profile
+        `)
         .eq('id', id)
         .single();
       if (error) {
         console.error('useAdminProducts: Supabase fetch error for single product:', error);
         throw error;
       }
-      console.log(\`useAdminProducts: Product ${id} fetched successfully.`);
+      console.log(`useAdminProducts: Product ${id} fetched successfully.`);
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch product';
@@ -666,7 +673,8 @@ export function useSellerProducts(sellerId: string | null) {
         .single();
       if (error) throw error;
       return data;
-    } catch (err) {
+    }
+    catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add product');
       return null;
     } finally {
@@ -974,7 +982,7 @@ export function useSellerCategories(sellerId: string | null) {
           product_count,
           department_id
         `)
-        .or(\`seller_id.is.null,seller_id.eq.${sellerId}`) // Categories are global OR belong to this seller
+        .or(`seller_id.is.null,seller_id.eq.${sellerId}`) // Categories are global OR belong to this seller
         .order('name', { ascending: true });
 
       if (categoriesError) throw categoriesError;
@@ -1007,7 +1015,7 @@ export function useSellerCategories(sellerId: string | null) {
         .from('categories')
         .select('*')
         .eq('id', id)
-        .or(\`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure category is global or seller's own
+        .or(`seller_id.eq.${sellerId},seller_id.is.null`) // Ensure category is global or seller's own
         .single();
       if (error) throw error;
       return data;

@@ -1,3 +1,4 @@
+```typescript
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -88,6 +89,8 @@ export type Database = {
           stock: number;
           specifications: Record<string, any>;
           created_at: string;
+          discount_type?: 'percentage' | 'flat_amount' | null; // NEW
+          discount_value?: number | null; // NEW
         };
         Insert: {
           id?: string;
@@ -105,6 +108,8 @@ export type Database = {
           stock?: number;
           specifications?: Record<string, any>;
           created_at?: string;
+          discount_type?: 'percentage' | 'flat_amount' | null; // NEW
+          discount_value?: number | null; // NEW
         };
         Update: {
           id?: string;
@@ -122,6 +127,8 @@ export type Database = {
           stock?: number;
           specifications?: Record<string, any>;
           created_at?: string;
+          discount_type?: 'percentage' | 'flat_amount' | null; // NEW
+          discount_value?: number | null; // NEW
         };
       };
       product_variants: {
@@ -415,3 +422,4 @@ export type Database = {
     };
   };
 };
+```

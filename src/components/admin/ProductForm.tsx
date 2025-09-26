@@ -1,3 +1,4 @@
+```typescript
 // src/components/admin/ProductForm.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/Button';
@@ -33,6 +34,12 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
   const [specifications, setSpecifications] = useState<string>(
     initialData?.specifications ? JSON.stringify(initialData.specifications, null, 2) : '{}'
   );
+  // NEW: Discount states
+  const [discountType, setDiscountType] = useState<'none' | 'percentage' | 'flat_amount'>(
+    initialData?.discountType || 'none'
+  );
+  const [discountValue, setDiscountValue] = useState<number | null>(initialData?.discountValue ?? null);
+
 
   useEffect(() => {
     if (initialData) {
@@ -47,6 +54,9 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       setBrand(initialData.brand);
       setStock(initialData.stock);
       setSpecifications(initialData.specifications ? JSON.stringify(initialData.specifications, null, 2) : '{}');
+      // NEW: Set discount states from initialData
+      setDiscountType(initialData.discountType || 'none');
+      setDiscountValue(initialData.discountValue ?? null);
     }
   }, [initialData]);
 
@@ -130,6 +140,9 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       brand,
       stock,
       specifications: parsedSpecs,
+      // NEW: Pass discount data
+      discountType: discountType === 'none' ? undefined : discountType,
+      discountValue: discountType === 'none' ? undefined : discountValue,
     });
   };
 
@@ -206,6 +219,44 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
           />
         </div>
+      </div>
+
+      {/* NEW: Discount fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="discountType" className="block text-sm font-medium text-gray-700">Discount Type</label>
+          <select
+            id="discountType"
+            value={discountType}
+            onChange={(e) => {
+              setDiscountType(e.target.value as 'none' | 'percentage' | 'flat_amount');
+              if (e.target.value === 'none') {
+                setDiscountValue(null);
+              }
+            }}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
+          >
+            <option value="none">No Discount</option>
+            <option value="percentage">Percentage Discount</option>
+            <option value="flat_amount">Flat Amount Discount</option>
+          </select>
+        </div>
+        {discountType !== 'none' && (
+          <div>
+            <label htmlFor="discountValue" className="block text-sm font-medium text-gray-700">
+              Discount Value {discountType === 'percentage' ? '(%)' : '($)'}
+            </label>
+            <input
+              type="number"
+              id="discountValue"
+              value={discountValue ?? ''}
+              onChange={(e) => setDiscountValue(parseFloat(e.target.value) || null)}
+              step="0.01"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
+              required
+            />
+          </div>
+        )}
       </div>
 
       {/* Image Upload Section */}
@@ -348,3 +399,4 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
     </form>
   );
 }
+```

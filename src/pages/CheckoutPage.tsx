@@ -1,3 +1,4 @@
+```typescript
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
@@ -178,7 +179,7 @@ export function CheckoutPage() {
         product_id: item.product_id,
         variant_id: item.variant_id,
         quantity: item.quantity,
-        price: item.product_variants?.price || item.products.price,
+        price: item.product_variants?.price || item.products.price, // Use original price for order_items
       }));
 
       const { error: orderItemsError } = await supabase
@@ -263,31 +264,50 @@ export function CheckoutPage() {
               <Package className="w-6 h-6 mr-3" /> Order Summary
             </h2>
             <div className="divide-y divide-brown-200">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex items-center py-4">
-                  <img
-                    src={item.products.images[0] || 'https://placehold.co/80?text=Product'}
-                    alt={item.products.name}
-                    className="w-20 h-20 object-cover rounded-lg border border-brown-200"
-                  />
-                  <div className="flex-1 ml-4">
-                    <h3 className="font-semibold text-lg text-brown-900">
-                      {item.products.name}
-                    </h3>
-                    {item.product_variants && (
-                      <p className="text-sm text-brown-600">Variant: {item.product_variants.name}</p>
-                    )}
-                    <p className="text-brown-700 mt-1">
-                      {"$" + (item.product_variants?.price || item.products.price).toFixed(2)} x {item.quantity}
-                    </p>
+              {cartItems.map((item) => {
+                const basePrice = item.product_variants?.price || item.products.price;
+                let effectivePrice = basePrice;
+                if (item.products.discountType === 'percentage' && item.products.discountValue !== undefined && item.products.discountValue !== null) {
+                  effectivePrice = basePrice * (1 - item.products.discountValue / 100);
+                } else if (item.products.discountType === 'flat_amount' && item.products.discountValue !== undefined && item.products.discountValue !== null) {
+                  effectivePrice = basePrice - item.products.discountValue;
+                }
+                effectivePrice = Math.max(0, effectivePrice); // Ensure price doesn't go below zero
+
+                return (
+                  <div key={item.id} className="flex items-center py-4">
+                    <img
+                      src={item.products.images[0] || 'https://placehold.co/80?text=Product'}
+                      alt={item.products.name}
+                      className="w-20 h-20 object-cover rounded-lg border border-brown-200"
+                    />
+                    <div className="flex-1 ml-4">
+                      <h3 className="font-semibold text-lg text-brown-900">
+                        {item.products.name}
+                      </h3>
+                      {item.product_variants && (
+                        <p className="text-sm text-brown-600">Variant: {item.product_variants.name}</p>
+                      )}
+                      <p className="text-brown-700 mt-1">
+                        {item.products.discountType && item.products.discountValue !== undefined && item.products.discountValue !== null ? (
+                          <>
+                            <span className="line-through">${basePrice.toFixed(2)}</span>{' '}
+                            <span className="text-red-600">${effectivePrice.toFixed(2)}</span> each
+                          </>
+                        ) : (
+                          `$${basePrice.toFixed(2)} each`
+                        )}
+                         x {item.quantity}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-brown-900">
+                        {"$" + (effectivePrice * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-brown-900">
-                      {"$" + ((item.product_variants?.price || item.products.price) * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex justify-between items-center text-lg text-brown-700 mt-6">
@@ -418,3 +438,4 @@ export function CheckoutPage() {
     </div>
   );
 }
+```

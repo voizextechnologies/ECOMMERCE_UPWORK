@@ -1,3 +1,4 @@
+```typescript
 import React, { useState, useEffect } from 'react'; // Added useEffect
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../../hooks/useSupabase';
@@ -67,9 +68,18 @@ export function ProductDetailPage() {
     setQuantity(prev => Math.max(1, prev + amount));
   };
 
-  const currentPrice = selectedVariant
+  // Calculate effective price considering variants and discounts
+  const basePrice = selectedVariant
     ? product.product_variants?.find(v => v.id === selectedVariant)?.price || product.price
     : product.price;
+
+  let effectivePrice = basePrice;
+  if (product.discountType === 'percentage' && product.discountValue !== undefined && product.discountValue !== null) {
+    effectivePrice = basePrice * (1 - product.discountValue / 100);
+  } else if (product.discountType === 'flat_amount' && product.discountValue !== undefined && product.discountValue !== null) {
+    effectivePrice = basePrice - product.discountValue;
+  }
+  effectivePrice = Math.max(0, effectivePrice); // Ensure price doesn't go below zero
 
   const currentStock = selectedVariant
     ? product.product_variants?.find(v => v.id === selectedVariant)?.stock || product.stock
@@ -123,10 +133,21 @@ export function ProductDetailPage() {
               </span>
             </div>
             <div className="flex items-baseline space-x-3 mb-6">
-              <span className="text-4xl font-bold text-brown-900">
-                ${currentPrice.toFixed(2)}
-              </span>
-              {product.original_price && (
+              {product.discountType && product.discountValue !== undefined && product.discountValue !== null ? (
+                <>
+                  <span className="text-4xl font-bold text-red-600">
+                    ${effectivePrice.toFixed(2)}
+                  </span>
+                  <span className="text-brown-500 line-through text-xl">
+                    ${basePrice.toFixed(2)}
+                  </span>
+                </>
+              ) : (
+                <span className="text-4xl font-bold text-brown-900">
+                  ${basePrice.toFixed(2)}
+                </span>
+              )}
+              {product.original_price && product.original_price > basePrice && (
                 <span className="text-brown-500 line-through text-xl">
                   ${product.original_price.toFixed(2)}
                 </span>
@@ -226,3 +247,4 @@ export function ProductDetailPage() {
     </div>
   );
 }
+```

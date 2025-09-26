@@ -1,3 +1,4 @@
+```typescript
 // src/types/index.ts
 export interface Product {
   id: string;
@@ -17,6 +18,8 @@ export interface Product {
   variants?: ProductVariant[];
   category_id?: string | null;
   department_id?: string | null;
+  discountType?: 'percentage' | 'flat_amount'; // NEW
+  discountValue?: number; // NEW
 }
 
 export interface ProductVariant {
@@ -118,3 +121,4 @@ export interface DIYArticle {
   category: string;
   tags: string[];
 }
+```
