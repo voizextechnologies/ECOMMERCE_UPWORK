@@ -1,11 +1,10 @@
-
+```typescript
 // src/pages/SellerCategoryDepartmentListPage.tsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useSellerCategories } from '../hooks/useSupabase'; // Use new seller hook
-import { Department, Category } from '../types';
-import { Edit, Trash2, PlusCircle } from 'lucide-react';
+import { Department, Category } fromimport { CreditCard as Edit, Trash2, PlusCircle } from 'lucide-react'lucide-react';
 import { useApp } from '../contexts/AppContext'; // To get current user's ID
 
 export function SellerCategoryDepartmentListPage() {
@@ -30,7 +29,7 @@ export function SellerCategoryDepartmentListPage() {
   // Removed handleDeleteDepartment as sellers cannot delete departments
 
   const handleDeleteCategory = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete the category "${name}"?`)) {
+    if (window.confirm(\`Are you sure you want to delete the category "${name}"?`)) {
       const success = await deleteCategory(id);
       if (success) {
         setRefresh(prev => !prev);
@@ -162,3 +161,4 @@ export function SellerCategoryDepartmentListPage() {
     </div>
   );
 }
+```
