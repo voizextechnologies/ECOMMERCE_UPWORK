@@ -113,12 +113,12 @@ export function AppRoutes() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isSellerRoute = location.pathname.startsWith('/seller'); // NEW
-  const isAuthRoute = location.pathname === '/register' || location.pathname === '/login';
+  const isAuthRoute = location.pathname === '/register' || location.pathname === '/login' || location.pathname === '/seller-register'; // Updated
 
   return (
     <div className="min-h-screen bg-brown-300 overflow-x-hidden">
       {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Header />}
-      <main className="pt-36"> {/* Changed pt-32 to pt-36 */}
+      <main className={!isAdminRoute && !isSellerRoute && !isAuthRoute ? "pt-36" : ""}> {/* Conditional padding */}
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={
