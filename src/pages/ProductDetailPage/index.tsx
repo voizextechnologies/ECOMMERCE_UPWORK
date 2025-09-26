@@ -1,4 +1,3 @@
-```typescript
 import React, { useState, useEffect } from 'react'; // Added useEffect
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../../hooks/useSupabase';
@@ -247,4 +246,3 @@ export function ProductDetailPage() {
     </div>
   );
 }
-```
