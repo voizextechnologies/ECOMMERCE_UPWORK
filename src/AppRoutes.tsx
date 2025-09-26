@@ -118,7 +118,7 @@ export function AppRoutes() {
   return (
     <div className="min-h-screen bg-brown-300 overflow-x-hidden">
       {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Header />} {/* Update Header condition */}
-      <main>
+      <main className="pt-32">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={
