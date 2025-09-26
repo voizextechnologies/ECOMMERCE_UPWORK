@@ -1,3 +1,4 @@
+```tsx
 // src/AppRoutes.tsx
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
@@ -117,8 +118,8 @@ export function AppRoutes() {
 
   return (
     <div className="min-h-screen bg-brown-300 overflow-x-hidden">
-      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Header />} {/* Update Header condition */}
-      <main className="pt-32">
+      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Header />}
+      <main className="pt-36"> {/* Changed pt-32 to pt-36 */}
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={
@@ -236,9 +237,9 @@ export function AppRoutes() {
           />
         </Routes>
       </main>
-      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Footer />} {/* Update Footer condition */}
+      {!isAdminRoute && !isSellerRoute && !isAuthRoute && <Footer />}
       <MiniCart />
     </div>
   );
 }
-
+```
