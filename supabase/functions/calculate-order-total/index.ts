@@ -1,3 +1,4 @@
+```typescript
 import { createClient } from 'npm:@supabase/supabase-js@2.57.2';
 
 const corsHeaders = {
@@ -152,3 +153,4 @@ Deno.serve(async (req: Request) => {
     });
   }
 });
+```
