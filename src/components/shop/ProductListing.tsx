@@ -12,7 +12,7 @@ interface ProductListingProps {
 
 export function ProductListing({ itemsPerPage }: ProductListingProps) {
   const [searchParams] = useSearchParams();
-  const { dispatch } = useApp();
+  const { addToCart } = useApp(); // Changed to directly get addToCart from useApp()
 
   const categorySlug = searchParams.get('category') || undefined;
   const searchQuery = searchParams.get('search') || undefined;
@@ -34,13 +34,7 @@ export function ProductListing({ itemsPerPage }: ProductListingProps) {
   }), [categorySlug, searchQuery, minPrice, maxPrice, brands, itemsPerPage, offset]);
   const { products, loading, error } = useProducts(productOptions);
 
-  const addToCart = (product: Product) => {
-    console.log('ProductListing: Attempting to add product to cart:', product); // Add this line
-    dispatch({
-      type: 'ADD_TO_CART',
-      payload: { product, quantity: 1 }
-    });
-  };
+  // Removed the local addToCart function, now using the one from useApp()
 
   if (loading) {
     return (
@@ -139,7 +133,7 @@ export function ProductListing({ itemsPerPage }: ProductListingProps) {
 
             <Button
               className="w-full"
-              onClick={() => addToCart(product)}
+              onClick={() => addToCart(product.id, 1)} // Directly calling addToCart from useApp()
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Add to Cart
