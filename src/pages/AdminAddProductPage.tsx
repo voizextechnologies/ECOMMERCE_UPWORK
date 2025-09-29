@@ -24,6 +24,10 @@ export function AdminAddProductPage() {
       specifications: productData.specifications || {},
       rating: 0,
       review_count: 0,
+      discount_type: productData.discountType || null,
+      discount_value: productData.discountValue || null,
+      is_taxable: productData.isTaxable,
+      is_shipping_exempt: productData.isShippingExempt,
     };
 
     const result = await addProduct(newProduct);

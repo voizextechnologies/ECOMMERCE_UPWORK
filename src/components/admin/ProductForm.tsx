@@ -277,6 +277,36 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
           ))}
         </div>
 
+        {/* Taxable and Shipping Exempt Checkboxes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center">
+            <input
+              id="isTaxable"
+              name="isTaxable"
+              type="checkbox"
+              checked={isTaxable}
+              onChange={(e) => setIsTaxable(e.target.checked)}
+              className="h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isTaxable" className="ml-2 block text-sm text-gray-900">
+              Is Taxable
+            </label>
+          </div>
+          <div className="flex items-center">
+            <input
+              id="isShippingExempt"
+              name="isShippingExempt"
+              type="checkbox"
+              checked={isShippingExempt}
+              onChange={(e) => setIsShippingExempt(e.target.checked)}
+              className="h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isShippingExempt" className="ml-2 block text-sm text-gray-900">
+              Is Shipping Exempt
+            </label>
+          </div>
+        </div>
+
         <input
           type="file"
           id="imageUpload"

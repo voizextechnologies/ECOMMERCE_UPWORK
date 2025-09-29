@@ -34,6 +34,10 @@ export function AdminEditProductPage() {
             specifications: data.specifications || {},
             category_id: data.category_id || null,
             department_id: data.department_id || null,
+            discountType: data.discount_type || undefined,
+            discountValue: data.discount_value || undefined,
+            isTaxable: data.is_taxable ?? true,
+            isShippingExempt: data.is_shipping_exempt ?? false,
           };
           setInitialData(mappedProduct);
         } else {
