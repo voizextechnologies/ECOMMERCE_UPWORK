@@ -55,6 +55,8 @@ import { DIYArticleDetailPage } from './pages/DIYArticleDetailPage';
 import { ServiceDetailPage } from './pages/ServiceDetailPage';
 // Import the new AdminDashboardPage
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
+// Import AdminGlobalSettingsPage
+import { AdminGlobalSettingsPage } from './pages/AdminGlobalSettingsPage';
 // NEW IMPORTS FOR SELLER DASHBOARD
 import { SellerProtectedRoute } from './components/auth/SellerProtectedRoute';
 import { SellerLayout } from './components/layout/SellerLayout';
