@@ -19,6 +19,7 @@ export function AdminSidebar({ isSidebarOpen, toggleSidebar }: AdminSidebarProps
     { path: '/admin/users', icon: Users, label: 'Users' },
     { path: '/admin/articles', icon: BookOpen, label: 'DIY Articles' },
     { path: '/admin/services', icon: Settings, label: 'Services' },
+    { path: '/admin/settings', icon: Settings, label: 'Global Settings' },
   ];
 
   return (
