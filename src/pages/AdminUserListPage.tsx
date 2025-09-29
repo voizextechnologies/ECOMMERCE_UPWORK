@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAdminUsers } from '../hooks/useSupabase';
-import { Edit } from 'lucide-react';
+import { CreditCard as Edit } from 'lucide-react';
 
 // Define a type for the user data
 interface UserProfile {
