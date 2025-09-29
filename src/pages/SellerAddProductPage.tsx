@@ -28,6 +28,10 @@ export function SellerAddProductPage() {
       specifications: productData.specifications || {},
       rating: 0,
       review_count: 0,
+      discount_type: productData.discountType || null,
+      discount_value: productData.discountValue || null,
+      is_taxable: productData.isTaxable,
+      is_shipping_exempt: productData.isShippingExempt,
       // seller_id will be automatically added by useSellerProducts hook
     };
 

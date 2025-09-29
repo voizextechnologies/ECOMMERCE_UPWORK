@@ -62,6 +62,10 @@ export function SellerEditProductPage() {
       brand: productData.brand || '',
       stock: productData.stock || 0,
       specifications: productData.specifications || {},
+      discount_type: productData.discountType || null,
+      discount_value: productData.discountValue || null,
+      is_taxable: productData.isTaxable,
+      is_shipping_exempt: productData.isShippingExempt,
     };
 
     const result = await updateProduct(id, updatedProduct);

@@ -34,10 +34,6 @@ export function AdminEditProductPage() {
             specifications: data.specifications || {},
             category_id: data.category_id || null,
             department_id: data.department_id || null,
-            discountType: data.discount_type || undefined,
-            discountValue: data.discount_value || undefined,
-            isTaxable: data.is_taxable ?? true,
-            isShippingExempt: data.is_shipping_exempt ?? false,
           };
           setInitialData(mappedProduct);
         } else {
@@ -63,6 +59,10 @@ export function AdminEditProductPage() {
       brand: productData.brand || '',
       stock: productData.stock || 0,
       specifications: productData.specifications || {},
+      discount_type: productData.discountType || null,
+      discount_value: productData.discountValue || null,
+      is_taxable: productData.isTaxable,
+      is_shipping_exempt: productData.isShippingExempt,
     };
 
     const result = await updateProduct(id, updatedProduct);
