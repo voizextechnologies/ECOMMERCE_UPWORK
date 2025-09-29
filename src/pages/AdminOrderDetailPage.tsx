@@ -128,7 +128,7 @@ export function AdminOrderDetailPage() {
                     {order.billing_address.address2 && <>{order.billing_address.address2}<br /></>}
                     {order.billing_address.city}, {order.billing_address.state} {order.billing_address.postcode}<br />
                     {order.billing_address.country}<br />
-                    {order.billing_address.phone && \`Phone: ${order.billing_address.phone}`}
+                    {order.billing_address.phone && `Phone: ${order.billing_address.phone}`}
                   </address>
                 ) : <p className="text-gray-500">N/A</p>}
               </div>
