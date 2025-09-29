@@ -3,53 +3,32 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAdminUsers } from '../hooks/useSupabase';
 import { Edit } from 'lucide-react';
-import { supabase } from '../lib/supabase'; // Import supabase client
 
-// Define a type for the user data with combined email
-interface UserProfileWithEmail {
+// Define a type for the user data
+interface UserProfile {
   id: string;
   first_name: string;
   last_name: string;
   role: string;
   created_at: string;
-  email: string; // Added email field
 }
 
 export function AdminUserListPage() {
   const { loading, error, fetchAllUserProfiles } = useAdminUsers();
-  const [users, setUsers] = useState<UserProfileWithEmail[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [refresh, setRefresh] = useState(false);
-  const [processingUsers, setProcessingUsers] = useState(true); // New state for processing
 
   useEffect(() => {
     const getUsers = async () => {
-      setProcessingUsers(true); // Start processing
       const fetchedProfiles = await fetchAllUserProfiles();
-
       if (fetchedProfiles) {
-        const profilesWithEmails: UserProfileWithEmail[] = await Promise.all(
-          fetchedProfiles.map(async (profile: any) => {
-            let email = 'N/A';
-            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(profile.id);
-            if (userData?.user) {
-              email = userData.user.email || 'N/A';
-            } else if (userError) {
-              console.error(`Error fetching email for user ${profile.id}:`, userError);
-            }
-            return {
-              ...profile,
-              email: email,
-            };
-          })
-        );
-        setUsers(profilesWithEmails);
+        setUsers(fetchedProfiles);
       }
-      setProcessingUsers(false); // End processing
     };
     getUsers();
   }, [refresh, fetchAllUserProfiles]);
 
-  if (loading || processingUsers) {
+  if (loading) {
     return <div className="text-center py-8">Loading users...</div>;
   }
 
@@ -76,9 +55,6 @@ export function AdminUserListPage() {
                     Name
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Role
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -94,9 +70,6 @@ export function AdminUserListPage() {
                   <tr key={user.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{user.first_name} {user.last_name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.email || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -132,9 +105,6 @@ export function AdminUserListPage() {
                   </span>
                 </div>
                 <div className="space-y-1 text-sm text-brown-700 mb-4">
-                  <p className="flex items-center">
-                    Email: <span className="font-medium ml-1">{user.email || 'N/A'}</span>
-                  </p>
                   <p className="flex items-center">
                     Created: <span className="font-medium ml-1">{new Date(user.created_at).toLocaleDateString()}</span>
                   </p>

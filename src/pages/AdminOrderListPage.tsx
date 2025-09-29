@@ -3,74 +3,34 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAdminOrders } from '../hooks/useSupabase';
 import { Package, Eye } from 'lucide-react';
-import { supabase } from '../lib/supabase'; // Import supabase client
 
-// Define a type for the order data with combined user info
-interface OrderWithUserInfo {
+// Define a type for the order data
+interface OrderData {
   id: string;
   order_number: string;
   status: string;
   total: number;
   created_at: string;
   user_id: string;
-  customer_name: string; // Combined from user_profiles
-  customer_email: string; // Fetched from auth.users
   // Include other order fields as needed
 }
 
 export function AdminOrderListPage() {
   const { loading, error, fetchAllOrders } = useAdminOrders();
-  const [orders, setOrders] = useState<OrderWithUserInfo[]>([]);
+  const [orders, setOrders] = useState<OrderData[]>([]);
   const [refresh, setRefresh] = useState(false);
-  const [processingOrders, setProcessingOrders] = useState(true); // New state for processing
 
   useEffect(() => {
     const getOrders = async () => {
-      setProcessingOrders(true); // Start processing
       const fetchedOrders = await fetchAllOrders();
-
       if (fetchedOrders) {
-        const ordersWithUserInfo: OrderWithUserInfo[] = await Promise.all(
-          fetchedOrders.map(async (order: any) => {
-            let customerName = 'N/A';
-            let customerEmail = 'N/A';
-
-            // Fetch user profile
-            const { data: profileData, error: profileError } = await supabase
-              .from('user_profiles')
-              .select('first_name, last_name')
-              .eq('id', order.user_id)
-              .single();
-
-            if (profileData) {
-              customerName = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
-            } else if (profileError) {
-              console.error(`Error fetching profile for user ${order.user_id}:`, profileError);
-            }
-
-            // Fetch user email from auth.users
-            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(order.user_id);
-            if (userData?.user) {
-              customerEmail = userData.user.email || 'N/A';
-            } else if (userError) {
-              console.error(`Error fetching user email for user ${order.user_id}:`, userError);
-            }
-
-            return {
-              ...order,
-              customer_name: customerName,
-              customer_email: customerEmail,
-            };
-          })
-        );
-        setOrders(ordersWithUserInfo);
+        setOrders(fetchedOrders);
       }
-      setProcessingOrders(false); // End processing
     };
     getOrders();
   }, [refresh, fetchAllOrders]);
 
-  if (loading || processingOrders) {
+  if (loading) {
     return <div className="text-center py-8">Loading orders...</div>;
   }
 
@@ -97,10 +57,7 @@ export function AdminOrderListPage() {
                     Order #
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                    User ID
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total
@@ -123,10 +80,7 @@ export function AdminOrderListPage() {
                       {order.order_number}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.customer_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {order.customer_email}
+                      {order.user_id.slice(0, 8)}...
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       ${order.total.toFixed(2)}
@@ -172,10 +126,7 @@ export function AdminOrderListPage() {
                 </div>
                 <div className="space-y-1 text-sm text-brown-700 mb-4">
                   <p className="flex items-center">
-                    Customer: <span className="font-medium ml-1">{order.customer_name}</span>
-                  </p>
-                  <p className="flex items-center">
-                    Email: <span className="font-medium ml-1">{order.customer_email}</span>
+                    User ID: <span className="font-medium ml-1">{order.user_id.slice(0, 8)}...</span>
                   </p>
                   <p className="flex items-center">
                     Total: <span className="font-medium ml-1">${order.total.toFixed(2)}</span>

@@ -17,7 +17,6 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { supabase } from '../lib/supabase'; // Import supabase client
 
 export function AdminDashboardPage() {
   const { fetchAllOrders, loading: ordersLoading, error: ordersError } = useAdminOrders();
@@ -66,38 +65,14 @@ export function AdminDashboardPage() {
         setTotalArticles(articlesData?.length || 0);
         setTotalServices(servicesData?.length || 0);
 
-        // Process recent orders
+        // Set recent orders without fetching additional user info
         if (ordersData) {
-          const ordersWithUserInfo = await Promise.all(
-            ordersData.slice(0, 5).map(async (order: any) => {
-              let customerName = 'N/A';
-              const { data: profileData } = await supabase
-                .from('user_profiles')
-                .select('first_name, last_name')
-                .eq('id', order.user_id)
-                .single();
-              if (profileData) {
-                customerName = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
-              }
-              return { ...order, customer_name: customerName };
-            })
-          );
-          setRecentOrders(ordersWithUserInfo);
+          setRecentOrders(ordersData.slice(0, 5));
         }
 
-        // Process recent users
+        // Set recent users without fetching emails
         if (usersData) {
-          const usersWithEmails = await Promise.all(
-            usersData.slice(0, 5).map(async (profile: any) => {
-              let email = 'N/A';
-              const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
-              if (userData?.user) {
-                email = userData.user.email || 'N/A';
-              }
-              return { ...profile, email: email };
-            })
-          );
-          setRecentUsers(usersWithEmails);
+          setRecentUsers(usersData.slice(0, 5));
         }
 
         // Process recent products
@@ -187,7 +162,7 @@ export function AdminDashboardPage() {
                 <li key={order.id} className="py-3 flex justify-between items-center">
                   <div>
                     <p className="font-medium text-brown-900">Order #{order.order_number}</p>
-                    <p className="text-sm text-brown-600">{order.customer_name}</p>
+                    <p className="text-sm text-brown-600">User ID: {order.user_id}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-brown-900">${order.total.toFixed(2)}</p>
@@ -222,7 +197,7 @@ export function AdminDashboardPage() {
                 <li key={user.id} className="py-3 flex justify-between items-center">
                   <div>
                     <p className="font-medium text-brown-900">{user.first_name} {user.last_name}</p>
-                    <p className="text-sm text-brown-600">{user.email}</p>
+                    <p className="text-sm text-brown-600">User ID: {user.id.slice(0, 8)}...</p>
                   </div>
                   <div className="text-right">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${

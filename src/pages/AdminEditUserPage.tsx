@@ -3,14 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminUsers } from '../hooks/useSupabase';
 import { Button } from '../components/ui/Button';
-import { supabase } from '../lib/supabase'; // Import supabase client
 
 export function AdminEditUserPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { fetchUserProfileById, updateUserProfile, loading, error } = useAdminUsers();
   const [initialData, setInitialData] = useState<any>(null); // User profile data
-  const [userEmail, setUserEmail] = useState<string>('N/A'); // User email from auth.users
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState('');
@@ -29,15 +27,6 @@ export function AdminEditUserPage() {
         setFirstName(profile.first_name || '');
         setLastName(profile.last_name || '');
         setRole(profile.role || '');
-
-        // Fetch user email from auth.users
-        const { data: userData, error: userAuthError } = await supabase.auth.admin.getUserById(id);
-        if (userData?.user) {
-          setUserEmail(userData.user.email || 'N/A');
-        } else if (userAuthError) {
-          console.error(`Error fetching user email for ${id}:`, userAuthError);
-          setFetchError('Failed to fetch user email.');
-        }
       } else {
         setFetchError('User profile not found or failed to load.');
       }
@@ -82,17 +71,6 @@ export function AdminEditUserPage() {
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={userEmail}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed sm:text-sm"
-              disabled
-            />
-          </div>
-
-          <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
             <input
               type="text"
@@ -127,7 +105,7 @@ export function AdminEditUserPage() {
             >
               <option value="customer">Customer</option>
               <option value="admin">Admin</option>
-              <option value="seller">Seller</option> {/* ADD THIS LINE */}
+              <option value="seller">Seller</option>
             </select>
           </div>
 
