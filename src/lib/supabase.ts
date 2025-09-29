@@ -436,18 +436,27 @@ export type Database = {
           Row: {
             id: string;
             default_tax_rate: number;
+            default_shipping_cost: number;
+            free_shipping_threshold: number;
+            apply_tax_to_shipping: boolean;
             created_at: string;
             updated_at: string;
           };
           Insert: {
             id?: string;
             default_tax_rate?: number;
+            default_shipping_cost?: number;
+            free_shipping_threshold?: number;
+            apply_tax_to_shipping?: boolean;
             created_at?: string;
             updated_at?: string;
           };
           Update: {
             id?: string;
             default_tax_rate?: number;
+            default_shipping_cost?: number;
+            free_shipping_threshold?: number;
+            apply_tax_to_shipping?: boolean;
             created_at?: string;
             updated_at?: string;
           };
