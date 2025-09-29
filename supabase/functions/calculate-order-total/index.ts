@@ -44,6 +44,7 @@ Deno.serve(async (req: Request) => {
       console.error('Error fetching global settings:', globalSettingsError.message);
     }
     const globalDefaultTaxRate = globalSettings?.default_tax_rate || 0;
+    const globalDefaultShippingCost = globalSettings?.default_shipping_cost || 9.95;
 
     // Group items by seller to fetch settings once per seller
     const itemsBySeller: { [sellerId: string]: any[] } = {};
@@ -57,6 +58,9 @@ Deno.serve(async (req: Request) => {
           discount_value,
           is_taxable,
           is_shipping_exempt,
+          override_global_settings,
+          custom_tax_rate,
+          custom_shipping_cost,
           product_variants (id, price)
         `)
         .eq('id', item.product_id)
@@ -85,7 +89,7 @@ Deno.serve(async (req: Request) => {
       // Fetch seller settings
       const { data: sellerSettings, error: settingsError } = await supabaseClient
         .from('seller_settings')
-        .select('tax_rate, freight_rules')
+        .select('tax_rate, freight_rules, override_global_tax, override_global_shipping')
         .eq('seller_id', sellerId)
         .maybeSingle();
 
@@ -93,12 +97,14 @@ Deno.serve(async (req: Request) => {
         console.error(`Error fetching seller settings for ${sellerId}:`, settingsError.message);
       }
 
-      // Use seller's tax rate if available, otherwise fall back to global default
-      const sellerTaxRate = sellerSettings?.tax_rate !== undefined && sellerSettings.tax_rate !== null
+      // Determine effective tax rate and shipping rules for this seller
+      const effectiveSellerTaxRate = (sellerSettings?.override_global_tax && sellerSettings?.tax_rate !== undefined && sellerSettings.tax_rate !== null)
         ? sellerSettings.tax_rate
         : globalDefaultTaxRate;
 
-      const sellerFreightRules = sellerSettings?.freight_rules || { type: 'none' };
+      const effectiveSellerFreightRules = (sellerSettings?.override_global_shipping && sellerSettings?.freight_rules)
+        ? sellerSettings.freight_rules
+        : { type: 'flat_rate', cost: globalDefaultShippingCost };
 
       let sellerSubtotal = 0;
       let sellerFreightForThisSeller = 0;
@@ -129,20 +135,29 @@ Deno.serve(async (req: Request) => {
           totalQuantityForFreightCalculation += item.quantity;
         }
 
-        // Calculate tax for this item if it's taxable
-        if (item.productData.is_taxable && shippingAddress.country === 'Australia' && sellerTaxRate > 0) {
-          totalTax += effectivePrice * item.quantity * (parseFloat(sellerTaxRate) / 100);
+        // Calculate tax for this item if it's taxable - check for product-specific override first
+        if (item.productData.is_taxable && shippingAddress.country === 'Australia') {
+          let applicableTaxRate = effectiveSellerTaxRate;
+          
+          // Check if product has custom tax rate override
+          if (item.productData.override_global_settings && item.productData.custom_tax_rate !== null) {
+            applicableTaxRate = item.productData.custom_tax_rate;
+          }
+          
+          if (applicableTaxRate > 0) {
+            totalTax += effectivePrice * item.quantity * (parseFloat(applicableTaxRate) / 100);
+          }
         }
       }
 
       // Calculate freight for this seller based on items NOT shipping exempt
       if (totalQuantityForFreightCalculation > 0) { // Only apply freight if there are non-exempt items
-        if (sellerFreightRules.type === 'flat_rate' && sellerFreightRules.cost !== undefined) {
-          sellerFreightForThisSeller = parseFloat(sellerFreightRules.cost);
-        } else if (sellerFreightRules.type === 'per_item' && sellerFreightRules.cost !== undefined) {
-          sellerFreightForThisSeller = parseFloat(sellerFreightRules.cost) * totalQuantityForFreightCalculation;
-        } else if (sellerFreightRules.type === 'free_shipping_threshold' && sellerFreightRules.free_shipping_threshold !== undefined) {
-          if (sellerSubtotalForFreightCalculation < parseFloat(sellerFreightRules.free_shipping_threshold)) {
+        if (effectiveSellerFreightRules.type === 'flat_rate' && effectiveSellerFreightRules.cost !== undefined) {
+          sellerFreightForThisSeller = parseFloat(effectiveSellerFreightRules.cost);
+        } else if (effectiveSellerFreightRules.type === 'per_item' && effectiveSellerFreightRules.cost !== undefined) {
+          sellerFreightForThisSeller = parseFloat(effectiveSellerFreightRules.cost) * totalQuantityForFreightCalculation;
+        } else if (effectiveSellerFreightRules.type === 'free_shipping_threshold' && effectiveSellerFreightRules.free_shipping_threshold !== undefined) {
+          if (sellerSubtotalForFreightCalculation < parseFloat(effectiveSellerFreightRules.free_shipping_threshold)) {
             sellerFreightForThisSeller = 10; // Example default freight if threshold not met
           } else {
             sellerFreightForThisSeller = 0;

@@ -188,6 +188,8 @@ export function AppRoutes() {
                     <Route path="services" element={<AdminServiceListPage />} />
                     <Route path="services/new" element={<AdminAddServicePage />} />
                     <Route path="services/:id/edit" element={<AdminEditServicePage />} />
+                    {/* Admin Global Settings Route */}
+                    <Route path="settings" element={<AdminGlobalSettingsPage />} />
                   </Routes>
                 </AdminLayout>
               </ProtectedRoute>
