@@ -239,6 +239,26 @@ export function ProductDetailPage() {
                   </Link>
                 </p>
               )}
+              <div className="mt-4 pt-4 border-t border-brown-200">
+                <div className="grid grid-cols-2 gap-4 text-sm text-brown-600">
+                  <div className="flex items-center">
+                    <span className="font-medium">Taxable:</span>
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      product.is_taxable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {product.is_taxable ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-medium">Free Shipping:</span>
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      product.is_shipping_exempt ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {product.is_shipping_exempt ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

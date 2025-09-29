@@ -185,6 +185,8 @@ export function AdminProductListPage() {
                       'text-red-800'
                     }`}>{product.stock}</span>
                   </p>
+                  <p>Taxable: <span className="font-medium">{product.isTaxable ? 'Yes' : 'No'}</span></p>
+                  <p>Shipping Exempt: <span className="font-medium">{product.isShippingExempt ? 'Yes' : 'No'}</span></p>
                   <p>Category: <span className="font-medium">{product.category}</span></p>
                   <p>Department: <span className="font-medium">{product.department}</span></p>
                 </div>
