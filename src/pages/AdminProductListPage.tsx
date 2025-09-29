@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { useAdminProducts } from '../hooks/useSupabase';
 import { Product } from '../types';
-import { Edit, Trash2, PlusCircle } from 'lucide-react';
+import { CreditCard as Edit, Trash2, PlusCircle } from 'lucide-react';
 
 export function AdminProductListPage() {
   const { loading, error, fetchAllProducts, deleteProduct } = useAdminProducts();
@@ -185,8 +185,6 @@ export function AdminProductListPage() {
                       'text-red-800'
                     }`}>{product.stock}</span>
                   </p>
-                  <p>Taxable: <span className="font-medium">{product.isTaxable ? 'Yes' : 'No'}</span></p>
-                  <p>Shipping Exempt: <span className="font-medium">{product.isShippingExempt ? 'Yes' : 'No'}</span></p>
                   <p>Category: <span className="font-medium">{product.category}</span></p>
                   <p>Department: <span className="font-medium">{product.department}</span></p>
                 </div>
