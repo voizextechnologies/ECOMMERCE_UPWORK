@@ -1864,3 +1864,60 @@ export function useGlobalSettings() {
     updateGlobalSettings,
   };
 }
+
+// NEW HOOK: Global product settings (separate from general global settings)
+export function useGlobalProductSettings() {
+  const [settings, setSettings] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchGlobalProductSettings() {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error } = await supabase
+          .from('global_product_settings')
+          .select('*')
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+        setSettings(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch global product settings');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchGlobalProductSettings();
+  }, []);
+
+  const updateGlobalProductSettings = useCallback(async (settingsData: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('global_product_settings')
+        .upsert({ id: '00000000-0000-0000-0000-000000000001', ...settingsData }, { onConflict: 'id' })
+        .select()
+        .single();
+      if (error) throw error;
+      setSettings(data);
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update global product settings');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    settings,
+    loading,
+    error,
+    updateGlobalProductSettings,
+  };
+}

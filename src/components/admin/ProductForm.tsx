@@ -38,6 +38,13 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
     initialData?.discountType || 'none'
   );
   const [discountValue, setDiscountValue] = useState<number | null>(initialData?.discountValue ?? null);
+  
+  // NEW: Tax and shipping override states
+  const [overrideGlobalSettings, setOverrideGlobalSettings] = useState(initialData?.override_global_settings || false);
+  const [customTaxRate, setCustomTaxRate] = useState<number | null>(initialData?.custom_tax_rate ?? null);
+  const [customShippingCost, setCustomShippingCost] = useState<number | null>(initialData?.custom_shipping_cost ?? null);
+  const [isTaxable, setIsTaxable] = useState(initialData?.is_taxable ?? true);
+  const [isShippingExempt, setIsShippingExempt] = useState(initialData?.is_shipping_exempt ?? false);
 
 
   useEffect(() => {
@@ -56,6 +63,13 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       // NEW: Set discount states from initialData
       setDiscountType(initialData.discountType || 'none');
       setDiscountValue(initialData.discountValue ?? null);
+      
+      // NEW: Set tax and shipping states from initialData
+      setOverrideGlobalSettings(initialData.override_global_settings || false);
+      setCustomTaxRate(initialData.custom_tax_rate ?? null);
+      setCustomShippingCost(initialData.custom_shipping_cost ?? null);
+      setIsTaxable(initialData.is_taxable ?? true);
+      setIsShippingExempt(initialData.is_shipping_exempt ?? false);
     }
   }, [initialData]);
 
@@ -142,6 +156,13 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
       // NEW: Pass discount data
       discountType: discountType === 'none' ? undefined : discountType,
       discountValue: discountType === 'none' ? undefined : discountValue,
+      
+      // NEW: Pass tax and shipping data
+      override_global_settings: overrideGlobalSettings,
+      custom_tax_rate: overrideGlobalSettings ? customTaxRate : null,
+      custom_shipping_cost: overrideGlobalSettings ? customShippingCost : null,
+      isTaxable,
+      isShippingExempt,
     });
   };
 
@@ -258,6 +279,85 @@ export function ProductForm({ initialData, onSubmit, loading, error }: ProductFo
         )}
       </div>
 
+      {/* NEW: Tax and Shipping Override Section */}
+      <div className="border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Tax & Shipping Settings</h3>
+        
+        <div className="flex items-center mb-4">
+          <input
+            id="overrideGlobalSettings"
+            name="overrideGlobalSettings"
+            type="checkbox"
+            checked={overrideGlobalSettings}
+            onChange={(e) => setOverrideGlobalSettings(e.target.checked)}
+            className="h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300 rounded"
+          />
+          <label htmlFor="overrideGlobalSettings" className="ml-2 block text-sm text-gray-900">
+            Override global tax and shipping settings for this product
+          </label>
+        </div>
+
+        {overrideGlobalSettings && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label htmlFor="customTaxRate" className="block text-sm font-medium text-gray-700">
+                Custom Tax Rate (%)
+              </label>
+              <input
+                type="number"
+                id="customTaxRate"
+                value={customTaxRate ?? ''}
+                onChange={(e) => setCustomTaxRate(parseFloat(e.target.value) || null)}
+                step="0.01"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="customShippingCost" className="block text-sm font-medium text-gray-700">
+                Custom Shipping Cost ($)
+              </label>
+              <input
+                type="number"
+                id="customShippingCost"
+                value={customShippingCost ?? ''}
+                onChange={(e) => setCustomShippingCost(parseFloat(e.target.value) || null)}
+                step="0.01"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Taxable and Shipping Exempt Checkboxes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center">
+            <input
+              id="isTaxable"
+              name="isTaxable"
+              type="checkbox"
+              checked={isTaxable}
+              onChange={(e) => setIsTaxable(e.target.checked)}
+              className="h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isTaxable" className="ml-2 block text-sm text-gray-900">
+              Is Taxable
+            </label>
+          </div>
+          <div className="flex items-center">
+            <input
+              id="isShippingExempt"
+              name="isShippingExempt"
+              type="checkbox"
+              checked={isShippingExempt}
+              onChange={(e) => setIsShippingExempt(e.target.checked)}
+              className="h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isShippingExempt" className="ml-2 block text-sm text-gray-900">
+              Is Shipping Exempt
+            </label>
+          </div>
+        </div>
+      </div>
       {/* Image Upload Section */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>

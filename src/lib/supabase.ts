@@ -92,6 +92,9 @@ export type Database = {
           discount_value?: number | null; // NEW
           is_taxable?: boolean;
           is_shipping_exempt?: boolean;
+          override_global_settings?: boolean;
+          custom_tax_rate?: number | null;
+          custom_shipping_cost?: number | null;
         };
         Insert: {
           id?: string;
@@ -113,6 +116,9 @@ export type Database = {
           discount_value?: number | null; // NEW
           is_taxable?: boolean;
           is_shipping_exempt?: boolean;
+          override_global_settings?: boolean;
+          custom_tax_rate?: number | null;
+          custom_shipping_cost?: number | null;
         };
         Update: {
           id?: string;
@@ -134,6 +140,9 @@ export type Database = {
           discount_value?: number | null; // NEW
           is_taxable?: boolean;
           is_shipping_exempt?: boolean;
+          override_global_settings?: boolean;
+          custom_tax_rate?: number | null;
+          custom_shipping_cost?: number | null;
         };
       };
       product_variants: {

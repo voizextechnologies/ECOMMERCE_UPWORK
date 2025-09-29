@@ -22,6 +22,10 @@ export interface Product {
   discountValue?: number; // NEW
   isTaxable?: boolean;
   isShippingExempt?: boolean;
+  // NEW: Product-specific tax and shipping overrides
+  override_global_settings?: boolean;
+  custom_tax_rate?: number | null;
+  custom_shipping_cost?: number | null;
 }
 
 export interface ProductVariant {
