@@ -20,6 +20,8 @@ export interface Product {
   department_id?: string | null;
   discountType?: 'percentage' | 'flat_amount'; // NEW
   discountValue?: number; // NEW
+  isTaxable?: boolean;
+  isShippingExempt?: boolean;
 }
 
 export interface ProductVariant {

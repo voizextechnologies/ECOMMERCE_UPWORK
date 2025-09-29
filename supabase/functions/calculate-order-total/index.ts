@@ -34,6 +34,17 @@ Deno.serve(async (req: Request) => {
     let totalFreight = 0;
     const processedItems: any[] = [];
 
+    // Fetch global settings for default tax rate
+    const { data: globalSettings, error: globalSettingsError } = await supabaseClient
+      .from('global_settings')
+      .select('default_tax_rate')
+      .maybeSingle();
+
+    if (globalSettingsError) {
+      console.error('Error fetching global settings:', globalSettingsError.message);
+    }
+    const globalDefaultTaxRate = globalSettings?.default_tax_rate || 0;
+
     // Group items by seller to fetch settings once per seller
     const itemsBySeller: { [sellerId: string]: any[] } = {};
     for (const item of items) {
@@ -44,6 +55,8 @@ Deno.serve(async (req: Request) => {
           seller_id,
           discount_type,
           discount_value,
+          is_taxable,
+          is_shipping_exempt,
           product_variants (id, price)
         `)
         .eq('id', item.product_id)
@@ -51,12 +64,12 @@ Deno.serve(async (req: Request) => {
 
       if (productError || !productData) {
         console.error('Error fetching product data:', productError?.message || 'Product not found');
-        throw new Error(\`Product not found for ID: ${item.product_id}`);
+        throw new Error(`Product not found for ID: ${item.product_id}`);
       }
 
       const sellerId = productData.seller_id;
       if (!sellerId) {
-        console.warn(\`Product ${item.product_id} has no seller_id. Skipping.`);
+        console.warn(`Product ${item.product_id} has no seller_id. Skipping.`);
         continue;
       }
 
@@ -74,18 +87,23 @@ Deno.serve(async (req: Request) => {
         .from('seller_settings')
         .select('tax_rate, freight_rules')
         .eq('seller_id', sellerId)
-        .maybeSingle(); // Use maybeSingle to handle cases where settings might not exist
+        .maybeSingle();
 
       if (settingsError) {
-        console.error(\`Error fetching seller settings for ${sellerId}:`, settingsError.message);
-        // Continue with default values if settings not found
+        console.error(`Error fetching seller settings for ${sellerId}:`, settingsError.message);
       }
 
-      const sellerTaxRate = sellerSettings?.tax_rate || 0;
+      // Use seller's tax rate if available, otherwise fall back to global default
+      const sellerTaxRate = sellerSettings?.tax_rate !== undefined && sellerSettings.tax_rate !== null
+        ? sellerSettings.tax_rate
+        : globalDefaultTaxRate;
+
       const sellerFreightRules = sellerSettings?.freight_rules || { type: 'none' };
 
       let sellerSubtotal = 0;
       let sellerFreightForThisSeller = 0;
+      let sellerSubtotalForFreightCalculation = 0; // Subtotal of items NOT shipping exempt
+      let totalQuantityForFreightCalculation = 0; // Quantity of items NOT shipping exempt
 
       for (const item of sellerItems) {
         const basePrice = item.variant_id
@@ -104,32 +122,36 @@ Deno.serve(async (req: Request) => {
 
         sellerSubtotal += effectivePrice * item.quantity;
         processedItems.push({ ...item, effectivePrice });
-      }
 
-      // Calculate freight for this seller
-      if (sellerFreightRules.type === 'flat_rate' && sellerFreightRules.cost !== undefined) {
-        sellerFreightForThisSeller = parseFloat(sellerFreightRules.cost);
-      } else if (sellerFreightRules.type === 'per_item' && sellerFreightRules.cost !== undefined) {
-        sellerFreightForThisSeller = parseFloat(sellerFreightRules.cost) * sellerItems.reduce((sum: number, i: any) => sum + i.quantity, 0);
-      } else if (sellerFreightRules.type === 'free_shipping_threshold' && sellerFreightRules.free_shipping_threshold !== undefined) {
-        if (sellerSubtotal < parseFloat(sellerFreightRules.free_shipping_threshold)) {
-          // Assuming a default flat rate if threshold not met, or it could be 0
-          // For simplicity, let's assume if threshold is not met, there's a default flat rate of 10, otherwise 0
-          sellerFreightForThisSeller = 10; // Example default freight if threshold not met
-        } else {
-          sellerFreightForThisSeller = 0;
+        // Only include items that are NOT shipping exempt in freight calculation
+        if (!item.productData.is_shipping_exempt) {
+          sellerSubtotalForFreightCalculation += effectivePrice * item.quantity;
+          totalQuantityForFreightCalculation += item.quantity;
+        }
+
+        // Calculate tax for this item if it's taxable
+        if (item.productData.is_taxable && shippingAddress.country === 'Australia' && sellerTaxRate > 0) {
+          totalTax += effectivePrice * item.quantity * (parseFloat(sellerTaxRate) / 100);
         }
       }
-      // Add more complex freight logic here if needed (e.g., based on shippingAddress)
+
+      // Calculate freight for this seller based on items NOT shipping exempt
+      if (totalQuantityForFreightCalculation > 0) { // Only apply freight if there are non-exempt items
+        if (sellerFreightRules.type === 'flat_rate' && sellerFreightRules.cost !== undefined) {
+          sellerFreightForThisSeller = parseFloat(sellerFreightRules.cost);
+        } else if (sellerFreightRules.type === 'per_item' && sellerFreightRules.cost !== undefined) {
+          sellerFreightForThisSeller = parseFloat(sellerFreightRules.cost) * totalQuantityForFreightCalculation;
+        } else if (sellerFreightRules.type === 'free_shipping_threshold' && sellerFreightRules.free_shipping_threshold !== undefined) {
+          if (sellerSubtotalForFreightCalculation < parseFloat(sellerFreightRules.free_shipping_threshold)) {
+            sellerFreightForThisSeller = 10; // Example default freight if threshold not met
+          } else {
+            sellerFreightForThisSeller = 0;
+          }
+        }
+      }
 
       totalFreight += sellerFreightForThisSeller;
-      subtotal += sellerSubtotal;
-
-      // Calculate tax for this seller's items
-      // Apply tax only for Australian buyers
-      if (shippingAddress.country === 'Australia' && sellerTaxRate > 0) {
-        totalTax += sellerSubtotal * (parseFloat(sellerTaxRate) / 100);
-      }
+      subtotal += sellerSubtotal; // This subtotal includes all items, even non-taxable ones
     }
 
     const grandTotal = subtotal + totalTax + totalFreight;

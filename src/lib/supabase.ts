@@ -90,6 +90,8 @@ export type Database = {
           created_at: string;
           discount_type?: 'percentage' | 'flat_amount' | null; // NEW
           discount_value?: number | null; // NEW
+          is_taxable?: boolean;
+          is_shipping_exempt?: boolean;
         };
         Insert: {
           id?: string;
@@ -109,6 +111,8 @@ export type Database = {
           created_at?: string;
           discount_type?: 'percentage' | 'flat_amount' | null; // NEW
           discount_value?: number | null; // NEW
+          is_taxable?: boolean;
+          is_shipping_exempt?: boolean;
         };
         Update: {
           id?: string;
@@ -128,6 +132,8 @@ export type Database = {
           created_at?: string;
           discount_type?: 'percentage' | 'flat_amount' | null; // NEW
           discount_value?: number | null; // NEW
+          is_taxable?: boolean;
+          is_shipping_exempt?: boolean;
         };
       };
       product_variants: {
@@ -416,6 +422,26 @@ export type Database = {
           category?: string;
           tags?: string[];
           created_at?: string;
+        };
+        global_settings: {
+          Row: {
+            id: string;
+            default_tax_rate: number;
+            created_at: string;
+            updated_at: string;
+          };
+          Insert: {
+            id?: string;
+            default_tax_rate?: number;
+            created_at?: string;
+            updated_at?: string;
+          };
+          Update: {
+            id?: string;
+            default_tax_rate?: number;
+            created_at?: string;
+            updated_at?: string;
+          };
         };
       };
     };
