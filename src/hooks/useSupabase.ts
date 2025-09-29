@@ -275,9 +275,7 @@ export function useCart(userId: string | null) {
               images,
               slug,
               discount_type,
-              discount_value,
-              is_taxable,
-              is_shipping_exempt
+              discount_value
             ),
             product_variants (
               id,
@@ -1807,5 +1805,62 @@ export function useSellerSettings(sellerId: string | null) {
     loading,
     error,
     upsertSettings,
+  };
+}
+
+// NEW HOOK: Global settings CRUD operations (for admin)
+export function useGlobalSettings() {
+  const [settings, setSettings] = useState<Tables['global_settings']['Row'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchGlobalSettings() {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error } = await supabase
+          .from('global_settings')
+          .select('*')
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+        setSettings(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch global settings');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchGlobalSettings();
+  }, []);
+
+  const updateGlobalSettings = useCallback(async (settingsData: Tables['global_settings']['Update']) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('global_settings')
+        .upsert({ id: '00000000-0000-0000-0000-000000000001', ...settingsData }, { onConflict: 'id' })
+        .select()
+        .single();
+      if (error) throw error;
+      setSettings(data);
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update global settings');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    settings,
+    loading,
+    error,
+    updateGlobalSettings,
   };
 }

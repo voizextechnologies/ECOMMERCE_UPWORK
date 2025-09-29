@@ -134,12 +134,6 @@ export function SellerProductListPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.isTaxable ? 'Yes' : 'No'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.isShippingExempt ? 'Yes' : 'No'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {product.category}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -188,6 +182,8 @@ export function SellerProductListPage() {
                       'text-red-800'
                     }`}>{product.stock}</span>
                   </p>
+                  <p>Taxable: <span className="font-medium">{product.isTaxable ? 'Yes' : 'No'}</span></p>
+                  <p>Shipping Exempt: <span className="font-medium">{product.isShippingExempt ? 'Yes' : 'No'}</span></p>
                   <p>Category: <span className="font-medium">{product.category}</span></p>
                   <p>Department: <span className="font-medium">{product.department}</span></p>
                 </div>
