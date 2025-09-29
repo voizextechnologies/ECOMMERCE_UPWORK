@@ -43,14 +43,15 @@ export function AdminLoginPage() {
     console.log('User session retrieved. User ID:', user.id); // Log 5
     console.log('Fetching user profile for role check...'); // Log 6
 
+    // Fetch the user's role from user_profiles using the standard supabase client
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle(); // Use maybeSingle to handle cases where profile might not exist
 
-    if (profileError || profile?.role !== 'admin') {
-      console.error('Profile fetch error or not an admin:', profileError || 'User is not admin'); // Log 7
+    if (profileError || !profile || profile.role !== 'admin') {
+      console.error('Profile fetch error or not an admin:', profileError || 'User is not admin');
       // If not an admin, log them out and show error
       await supabase.auth.signOut();
       setError('Access Denied: You do not have administrator privileges.');
