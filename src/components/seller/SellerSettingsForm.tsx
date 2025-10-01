@@ -5,8 +5,23 @@ interface SellerSettingsFormProps {
   initialData: {
     tax_rate: number;
     freight_rules: any;
+    override_global_tax?: boolean;
+    override_global_shipping?: boolean;
+    tax_registration_number?: string;
+    gstin?: string;
+    vat_id?: string;
+    tax_inclusive_pricing?: boolean;
   };
-  onSubmit: (data: { tax_rate: number; freight_rules: any }) => void;
+  onSubmit: (data: {
+    tax_rate: number;
+    freight_rules: any;
+    override_global_tax: boolean;
+    override_global_shipping: boolean;
+    tax_registration_number?: string;
+    gstin?: string;
+    vat_id?: string;
+    tax_inclusive_pricing: boolean;
+  }) => void;
   loading: boolean;
   error: string | null;
 }
@@ -24,9 +39,15 @@ export function SellerSettingsForm({ initialData, onSubmit, loading, error }: Se
     initialData.freight_rules?.free_shipping_threshold ?? null
   );
   
-  // NEW: Override states
+  // Override states
   const [overrideGlobalTax, setOverrideGlobalTax] = useState(initialData.override_global_tax || false);
   const [overrideGlobalShipping, setOverrideGlobalShipping] = useState(initialData.override_global_shipping || false);
+
+  // Tax registration states
+  const [taxRegistrationNumber, setTaxRegistrationNumber] = useState(initialData.tax_registration_number || '');
+  const [gstin, setGstin] = useState(initialData.gstin || '');
+  const [vatId, setVatId] = useState(initialData.vat_id || '');
+  const [taxInclusivePricing, setTaxInclusivePricing] = useState(initialData.tax_inclusive_pricing || false);
 
 
   useEffect(() => {
@@ -36,9 +57,15 @@ export function SellerSettingsForm({ initialData, onSubmit, loading, error }: Se
     setFreightCost(initialData.freight_rules?.cost ?? null);
     setFreeShippingThreshold(initialData.freight_rules?.free_shipping_threshold ?? null);
     
-    // NEW: Set override states
+    // Set override states
     setOverrideGlobalTax(initialData.override_global_tax || false);
     setOverrideGlobalShipping(initialData.override_global_shipping || false);
+
+    // Set tax registration states
+    setTaxRegistrationNumber(initialData.tax_registration_number || '');
+    setGstin(initialData.gstin || '');
+    setVatId(initialData.vat_id || '');
+    setTaxInclusivePricing(initialData.tax_inclusive_pricing || false);
   }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -58,6 +85,10 @@ export function SellerSettingsForm({ initialData, onSubmit, loading, error }: Se
       freight_rules: constructedFreightRules,
       override_global_tax: overrideGlobalTax,
       override_global_shipping: overrideGlobalShipping,
+      tax_registration_number: taxRegistrationNumber,
+      gstin: gstin,
+      vat_id: vatId,
+      tax_inclusive_pricing: taxInclusivePricing,
     });
   };
 
@@ -65,9 +96,80 @@ export function SellerSettingsForm({ initialData, onSubmit, loading, error }: Se
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
+      {/* Tax Registration Section */}
+      <div className="border-b border-gray-200 pb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Tax Registration</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Provide your tax registration details. These will be used for tax compliance and invoicing.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label htmlFor="taxRegistrationNumber" className="block text-sm font-medium text-gray-700">
+              Tax Registration Number
+            </label>
+            <input
+              type="text"
+              id="taxRegistrationNumber"
+              value={taxRegistrationNumber}
+              onChange={(e) => setTaxRegistrationNumber(e.target.value)}
+              placeholder="e.g., TRN12345678"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
+            />
+            <p className="mt-1 text-xs text-gray-500">General tax registration ID for your region</p>
+          </div>
+
+          <div>
+            <label htmlFor="gstin" className="block text-sm font-medium text-gray-700">
+              GSTIN (India)
+            </label>
+            <input
+              type="text"
+              id="gstin"
+              value={gstin}
+              onChange={(e) => setGstin(e.target.value)}
+              placeholder="e.g., 22AAAAA0000A1Z5"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
+            />
+            <p className="mt-1 text-xs text-gray-500">Goods and Services Tax Identification Number</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label htmlFor="vatId" className="block text-sm font-medium text-gray-700">
+              VAT ID (Europe/Other)
+            </label>
+            <input
+              type="text"
+              id="vatId"
+              value={vatId}
+              onChange={(e) => setVatId(e.target.value)}
+              placeholder="e.g., GB123456789"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brown-500 focus:ring-brown-500 sm:text-sm"
+            />
+            <p className="mt-1 text-xs text-gray-500">Value Added Tax registration number</p>
+          </div>
+
+          <div className="flex items-center pt-6">
+            <input
+              id="taxInclusivePricing"
+              name="taxInclusivePricing"
+              type="checkbox"
+              checked={taxInclusivePricing}
+              onChange={(e) => setTaxInclusivePricing(e.target.checked)}
+              className="h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300 rounded"
+            />
+            <label htmlFor="taxInclusivePricing" className="ml-2 block text-sm text-gray-900">
+              My product prices include tax (tax-inclusive pricing)
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Tax Settings Section */}
       <div className="border-b border-gray-200 pb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Tax Settings</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Tax Rate Override</h3>
         
         <div className="flex items-center mb-4">
           <input

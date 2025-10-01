@@ -89,7 +89,7 @@ Deno.serve(async (req: Request) => {
       // Fetch seller settings
       const { data: sellerSettings, error: settingsError } = await supabaseClient
         .from('seller_settings')
-        .select('tax_rate, freight_rules, override_global_tax, override_global_shipping')
+        .select('tax_rate, freight_rules, override_global_tax, override_global_shipping, tax_inclusive_pricing')
         .eq('seller_id', sellerId)
         .maybeSingle();
 
@@ -126,26 +126,55 @@ Deno.serve(async (req: Request) => {
         }
         effectivePrice = Math.max(0, effectivePrice); // Ensure price doesn't go below zero
 
-        sellerSubtotal += effectivePrice * item.quantity;
-        processedItems.push({ ...item, effectivePrice });
+        // Handle tax-inclusive pricing: if seller has tax-inclusive pricing enabled,
+        // we need to extract the tax from the price
+        let priceWithoutTax = effectivePrice;
+        let includedTax = 0;
 
-        // Only include items that are NOT shipping exempt in freight calculation
-        if (!item.productData.is_shipping_exempt) {
-          sellerSubtotalForFreightCalculation += effectivePrice * item.quantity;
-          totalQuantityForFreightCalculation += item.quantity;
-        }
-
-        // Calculate tax for this item if it's taxable - check for product-specific override first
-        if (item.productData.is_taxable && shippingAddress.country === 'Australia') {
+        if (sellerSettings?.tax_inclusive_pricing && item.productData.is_taxable && shippingAddress.country === 'Australia') {
           let applicableTaxRate = effectiveSellerTaxRate;
-          
+
           // Check if product has custom tax rate override
           if (item.productData.override_global_settings && item.productData.custom_tax_rate !== null) {
             applicableTaxRate = item.productData.custom_tax_rate;
           }
-          
+
           if (applicableTaxRate > 0) {
-            totalTax += effectivePrice * item.quantity * (parseFloat(applicableTaxRate) / 100);
+            // Calculate price without tax: price = priceWithTax / (1 + taxRate/100)
+            priceWithoutTax = effectivePrice / (1 + parseFloat(applicableTaxRate) / 100);
+            includedTax = effectivePrice - priceWithoutTax;
+          }
+        }
+
+        // If tax-inclusive pricing, use price without tax for subtotal
+        const subtotalPrice = sellerSettings?.tax_inclusive_pricing ? priceWithoutTax : effectivePrice;
+
+        sellerSubtotal += subtotalPrice * item.quantity;
+        processedItems.push({ ...item, effectivePrice, priceWithoutTax, includedTax });
+
+        // Only include items that are NOT shipping exempt in freight calculation
+        if (!item.productData.is_shipping_exempt) {
+          sellerSubtotalForFreightCalculation += subtotalPrice * item.quantity;
+          totalQuantityForFreightCalculation += item.quantity;
+        }
+
+        // Calculate tax for this item if it's taxable - check for product-specific override first
+        // If tax-inclusive, add the already extracted tax; otherwise calculate it
+        if (item.productData.is_taxable && shippingAddress.country === 'Australia') {
+          if (sellerSettings?.tax_inclusive_pricing && includedTax > 0) {
+            // Tax already extracted from price
+            totalTax += includedTax * item.quantity;
+          } else {
+            let applicableTaxRate = effectiveSellerTaxRate;
+
+            // Check if product has custom tax rate override
+            if (item.productData.override_global_settings && item.productData.custom_tax_rate !== null) {
+              applicableTaxRate = item.productData.custom_tax_rate;
+            }
+
+            if (applicableTaxRate > 0) {
+              totalTax += subtotalPrice * item.quantity * (parseFloat(applicableTaxRate) / 100);
+            }
           }
         }
       }

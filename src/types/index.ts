@@ -102,6 +102,19 @@ export interface Order {
   billingAddress: Address;
   createdAt: string;
   deliveryMethod: 'shipping' | 'click-collect';
+  deliveryType?: 'standard' | 'express' | 'prime' | 'scheduled';
+  trackingNumber?: string;
+  carrier?: string;
+  estimatedDeliveryDate?: string;
+  fulfillmentMethod?: 'platform' | 'self';
+}
+
+export interface Carrier {
+  id: string;
+  name: string;
+  code: string;
+  tracking_url_template?: string;
+  is_active: boolean;
 }
 
 export interface Service {

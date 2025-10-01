@@ -5,7 +5,7 @@ import { useAddresses } from '../hooks/useSupabase';
 import { Button } from '../components/ui/Button';
 import { AddressForm } from '../components/account/AddressForm';
 import { AddressList } from '../components/account/AddressList';
-import { MapPin, Package, CreditCard } from 'lucide-react';
+import { MapPin, Package, CreditCard, Truck, Clock } from 'lucide-react';
 import { Address } from '../types';
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '../lib/supabase';
@@ -29,6 +29,7 @@ export function CheckoutPage() {
   const [calculatedGrandTotal, setCalculatedGrandTotal] = useState('0.00');
   const [calculationLoading, setCalculationLoading] = useState(false);
   const [calculationError, setCalculationError] = useState<string | null>(null);
+  const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
 
   useEffect(() => {
     if (!cartLoading && cartItems.length === 0) {
@@ -164,6 +165,8 @@ export function CheckoutPage() {
           shipping_address_id: selectedShippingAddressId,
           billing_address_id: selectedBillingAddressId,
           delivery_method: 'shipping',
+          delivery_type: deliveryType,
+          fulfillment_method: 'self',
         })
         .select('id')
         .single();
@@ -336,6 +339,70 @@ export function CheckoutPage() {
             <div className="flex justify-between items-center text-2xl font-bold text-brown-900 border-t border-brown-200 pt-4">
               <span>Total</span>
               <span>{"$" + calculatedGrandTotal}</span>
+            </div>
+          </div>
+
+          {/* Delivery Options */}
+          <div className="bg-white p-6 rounded-lg shadow-md mt-6">
+            <h2 className="text-2xl font-bold text-brown-900 mb-6 flex items-center">
+              <Truck className="w-6 h-6 mr-3" /> Delivery Options
+            </h2>
+            <div className="space-y-4">
+              <div
+                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  deliveryType === 'standard'
+                    ? 'border-brown-500 bg-brown-50 ring-2 ring-brown-500'
+                    : 'border-gray-200 hover:border-brown-300'
+                }`}
+                onClick={() => setDeliveryType('standard')}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start">
+                    <input
+                      type="radio"
+                      checked={deliveryType === 'standard'}
+                      onChange={() => setDeliveryType('standard')}
+                      className="mt-1 h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300"
+                    />
+                    <div className="ml-3">
+                      <p className="font-semibold text-brown-900">Standard Delivery</p>
+                      <p className="text-sm text-brown-600 flex items-center mt-1">
+                        <Clock className="w-4 h-4 mr-1" /> 3-5 business days
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Free shipping on orders over $99</p>
+                    </div>
+                  </div>
+                  <span className="font-semibold text-brown-900">Included</span>
+                </div>
+              </div>
+
+              <div
+                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  deliveryType === 'express'
+                    ? 'border-brown-500 bg-brown-50 ring-2 ring-brown-500'
+                    : 'border-gray-200 hover:border-brown-300'
+                }`}
+                onClick={() => setDeliveryType('express')}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start">
+                    <input
+                      type="radio"
+                      checked={deliveryType === 'express'}
+                      onChange={() => setDeliveryType('express')}
+                      className="mt-1 h-4 w-4 text-brown-600 focus:ring-brown-500 border-gray-300"
+                    />
+                    <div className="ml-3">
+                      <p className="font-semibold text-brown-900">Express Delivery</p>
+                      <p className="text-sm text-brown-600 flex items-center mt-1">
+                        <Clock className="w-4 h-4 mr-1" /> 1-2 business days
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Fastest delivery option</p>
+                    </div>
+                  </div>
+                  <span className="font-semibold text-brown-900">+ $15.00</span>
+                </div>
+              </div>
             </div>
           </div>
 

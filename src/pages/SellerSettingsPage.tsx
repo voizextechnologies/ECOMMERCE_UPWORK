@@ -11,11 +11,26 @@ export function SellerSettingsPage() {
   const { settings, loading, error, upsertSettings } = useSellerSettings(userId);
   const { settings: globalSettings, loading: globalSettingsLoading, error: globalSettingsError } = useGlobalSettings();
 
-  const handleSubmit = async (data: { tax_rate: number; freight_rules: any }) => {
+  const handleSubmit = async (data: {
+    tax_rate: number;
+    freight_rules: any;
+    override_global_tax: boolean;
+    override_global_shipping: boolean;
+    tax_registration_number?: string;
+    gstin?: string;
+    vat_id?: string;
+    tax_inclusive_pricing: boolean;
+  }) => {
     const result = await upsertSettings({
       seller_id: userId!,
       tax_rate: data.tax_rate,
       freight_rules: data.freight_rules,
+      override_global_tax: data.override_global_tax,
+      override_global_shipping: data.override_global_shipping,
+      tax_registration_number: data.tax_registration_number,
+      gstin: data.gstin,
+      vat_id: data.vat_id,
+      tax_inclusive_pricing: data.tax_inclusive_pricing,
     });
     if (result) {
       alert('Settings saved successfully!');
@@ -42,7 +57,16 @@ export function SellerSettingsPage() {
         </div>
       )}
       <SellerSettingsForm
-        initialData={settings || { tax_rate: 0, freight_rules: {} }}
+        initialData={settings || {
+          tax_rate: 0,
+          freight_rules: {},
+          override_global_tax: false,
+          override_global_shipping: false,
+          tax_registration_number: '',
+          gstin: '',
+          vat_id: '',
+          tax_inclusive_pricing: false,
+        }}
         onSubmit={handleSubmit}
         loading={loading}
         error={error}

@@ -68,6 +68,9 @@ import { SellerCategoryDepartmentListPage } from './pages/SellerCategoryDepartme
 import { SellerAddCategoryPage } from './pages/SellerAddCategoryPage';
 import { SellerEditCategoryPage } from './pages/SellerEditCategoryPage';
 import { SellerSettingsPage } from './pages/SellerSettingsPage';
+import { SellerOrderListPage } from './pages/SellerOrderListPage';
+import { SellerOrderDetailPage } from './pages/SellerOrderDetailPage';
+import { OrderTrackingPage } from './pages/OrderTrackingPage';
 
 // ProtectedRoute component to guard routes based on authentication
 interface ProtectedRouteProps {
@@ -156,6 +159,14 @@ export function AppRoutes() {
             }
           />
           <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+          <Route
+            path="/orders/:id/track"
+            element={
+              <ProtectedRoute requiredRole="customer">
+                <OrderTrackingPage />
+              </ProtectedRoute>
+            }
+          />
           {/* Admin Login Route */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
           {/* Admin Protected Routes */}
@@ -211,6 +222,8 @@ export function AppRoutes() {
                     <Route path="categories" element={<SellerCategoryDepartmentListPage />} />
                     <Route path="categories/new-category" element={<SellerAddCategoryPage />} />
                     <Route path="categories/categories/:id/edit" element={<SellerEditCategoryPage />} />
+                    <Route path="orders" element={<SellerOrderListPage />} />
+                    <Route path="orders/:id" element={<SellerOrderDetailPage />} />
                     <Route path="settings" element={<SellerSettingsPage />} />
                   </Routes>
                 </SellerLayout>
