@@ -19,15 +19,9 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can read own profile or admins can read all profiles"
+CREATE POLICY "Users can read own profile"
   ON user_profiles FOR SELECT TO authenticated
-  USING (
-    (auth.uid() = id) OR
-    (EXISTS (
-      SELECT 1 FROM user_profiles
-      WHERE user_profiles.id = auth.uid() AND user_profiles.role = 'admin'
-    ))
-  );
+  USING (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile"
   ON user_profiles FOR UPDATE TO authenticated
