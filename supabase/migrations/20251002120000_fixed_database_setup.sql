@@ -318,41 +318,7 @@ CREATE POLICY "Users can create own orders"
   ON orders FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Sellers can read orders with their products"
-  ON orders FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles up
-      JOIN order_items oi ON oi.order_id = orders.id
-      JOIN products p ON p.id = oi.product_id
-      WHERE up.id = auth.uid()
-      AND up.role = 'seller'
-      AND p.seller_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Sellers can update orders with their products"
-  ON orders FOR UPDATE TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles up
-      JOIN order_items oi ON oi.order_id = orders.id
-      JOIN products p ON p.id = oi.product_id
-      WHERE up.id = auth.uid()
-      AND up.role = 'seller'
-      AND p.seller_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM user_profiles up
-      JOIN order_items oi ON oi.order_id = orders.id
-      JOIN products p ON p.id = oi.product_id
-      WHERE up.id = auth.uid()
-      AND up.role = 'seller'
-      AND p.seller_id = auth.uid()
-    )
-  );
+-- Seller policies will be added after order_items table is created
 
 CREATE POLICY "Admins can manage all orders"
   ON orders FOR ALL TO authenticated
@@ -425,6 +391,59 @@ CREATE POLICY "Admins can manage all order items"
 
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_product ON order_items(product_id);
+
+-- ============================================================================
+-- ADD SELLER POLICIES TO ORDERS (After order_items exists)
+-- ============================================================================
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'orders' AND policyname = 'Sellers can read orders with their products'
+  ) THEN
+    CREATE POLICY "Sellers can read orders with their products"
+      ON orders FOR SELECT TO authenticated
+      USING (
+        EXISTS (
+          SELECT 1 FROM user_profiles up
+          JOIN order_items oi ON oi.order_id = orders.id
+          JOIN products p ON p.id = oi.product_id
+          WHERE up.id = auth.uid()
+          AND up.role = 'seller'
+          AND p.seller_id = auth.uid()
+        )
+      );
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'orders' AND policyname = 'Sellers can update orders with their products'
+  ) THEN
+    CREATE POLICY "Sellers can update orders with their products"
+      ON orders FOR UPDATE TO authenticated
+      USING (
+        EXISTS (
+          SELECT 1 FROM user_profiles up
+          JOIN order_items oi ON oi.order_id = orders.id
+          JOIN products p ON p.id = oi.product_id
+          WHERE up.id = auth.uid()
+          AND up.role = 'seller'
+          AND p.seller_id = auth.uid()
+        )
+      )
+      WITH CHECK (
+        EXISTS (
+          SELECT 1 FROM user_profiles up
+          JOIN order_items oi ON oi.order_id = orders.id
+          JOIN products p ON p.id = oi.product_id
+          WHERE up.id = auth.uid()
+          AND up.role = 'seller'
+          AND p.seller_id = auth.uid()
+        )
+      );
+  END IF;
+END $$;
 
 -- ============================================================================
 -- CARRIERS TABLE
