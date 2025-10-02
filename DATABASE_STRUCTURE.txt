@@ -1,0 +1,315 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                   DATABASE STRUCTURE OVERVIEW                            ║
+║                  EcoConnect Supply Chain Platform                        ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PRODUCT MANAGEMENT (4 tables)                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  departments
+  ├── id (uuid, PK)
+  ├── slug (text, unique)
+  ├── name (text)
+  ├── description (text)
+  ├── image (text)
+  └── created_at (timestamptz)
+      │
+      └─► categories
+          ├── id (uuid, PK)
+          ├── slug (text, unique)
+          ├── name (text)
+          ├── description (text)
+          ├── image (text)
+          ├── product_count (int)
+          ├── department_id (uuid, FK) ──┐
+          └── created_at (timestamptz)    │
+              │                            │
+              └─► products                 │
+                  ├── id (uuid, PK)        │
+                  ├── slug (text, unique)  │
+                  ├── name (text)          │
+                  ├── description (text)   │
+                  ├── price (numeric)      │
+                  ├── original_price       │
+                  ├── images (text[])      │
+                  ├── category_id (FK) ────┘
+                  ├── department_id (FK) ──────┘
+                  ├── brand (text)
+                  ├── rating (numeric 0-5)
+                  ├── review_count (int)
+                  ├── stock (int)
+                  ├── specifications (jsonb)
+                  ├── seller_id (uuid, FK to auth.users)
+                  ├── is_taxable (bool)
+                  ├── is_shipping_exempt (bool)
+                  ├── override_global_settings (bool)
+                  ├── custom_tax_rate (numeric)
+                  ├── custom_shipping_cost (numeric)
+                  ├── shipping_sla_days (int)
+                  ├── express_shipping_days (int)
+                  ├── discount_type (text)
+                  ├── discount_value (numeric)
+                  └── created_at (timestamptz)
+                      │
+                      └─► product_variants
+                          ├── id (uuid, PK)
+                          ├── product_id (uuid, FK)
+                          ├── name (text)
+                          ├── price (numeric)
+                          ├── stock (int)
+                          ├── attributes (jsonb)
+                          └── created_at (timestamptz)
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ USER MANAGEMENT (4 tables)                                              │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  auth.users (Supabase Auth)
+  │
+  └─► user_profiles
+      ├── id (uuid, PK, FK to auth.users)
+      ├── first_name (text)
+      ├── last_name (text)
+      ├── role (text: customer|seller|admin)
+      └── created_at (timestamptz)
+          │
+          ├─► addresses
+          │   ├── id (uuid, PK)
+          │   ├── user_id (uuid, FK)
+          │   ├── type (text: billing|shipping)
+          │   ├── first_name (text)
+          │   ├── last_name (text)
+          │   ├── company (text)
+          │   ├── address1 (text)
+          │   ├── address2 (text)
+          │   ├── city (text)
+          │   ├── state (text)
+          │   ├── postcode (text)
+          │   ├── country (text)
+          │   ├── phone (text)
+          │   └── created_at (timestamptz)
+          │
+          ├─► cart_items
+          │   ├── id (uuid, PK)
+          │   ├── user_id (uuid, FK)
+          │   ├── product_id (uuid, FK to products)
+          │   ├── variant_id (uuid, FK to product_variants)
+          │   ├── quantity (int)
+          │   ├── created_at (timestamptz)
+          │   └── UNIQUE(user_id, product_id, variant_id)
+          │
+          └─► wishlist
+              ├── id (uuid, PK)
+              ├── user_id (uuid, FK)
+              ├── product_id (uuid, FK to products)
+              ├── created_at (timestamptz)
+              └── UNIQUE(user_id, product_id)
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ORDER MANAGEMENT (4 tables)                                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  orders
+  ├── id (uuid, PK)
+  ├── user_id (uuid, FK to auth.users)
+  ├── order_number (text, unique)
+  ├── status (text: pending|processing|shipped|delivered|cancelled)
+  ├── total (numeric)
+  ├── shipping_address_id (uuid, FK to addresses)
+  ├── billing_address_id (uuid, FK to addresses)
+  ├── delivery_method (text: shipping|click-collect)
+  ├── tracking_number (text)
+  ├── carrier (text)
+  ├── delivery_type (text: standard|express|prime|scheduled)
+  ├── estimated_delivery_date (timestamptz)
+  ├── actual_delivery_date (timestamptz)
+  ├── fulfillment_method (text: platform|self)
+  └── created_at (timestamptz)
+      │
+      ├─► order_items
+      │   ├── id (uuid, PK)
+      │   ├── order_id (uuid, FK)
+      │   ├── product_id (uuid, FK to products)
+      │   ├── variant_id (uuid, FK to product_variants)
+      │   ├── quantity (int)
+      │   ├── price (numeric)
+      │   └── created_at (timestamptz)
+      │
+      └─► order_tracking_events
+          ├── id (uuid, PK)
+          ├── order_id (uuid, FK)
+          ├── event_type (text: created|confirmed|processing|picked|
+          │                     in_transit|out_for_delivery|delivered|
+          │                     failed|returned|cancelled)
+          ├── event_description (text)
+          ├── location (text)
+          ├── created_by (uuid, FK to auth.users)
+          └── created_at (timestamptz)
+
+  carriers (Standalone)
+  ├── id (uuid, PK)
+  ├── name (text, unique)
+  ├── code (text, unique)
+  ├── tracking_url_template (text)
+  ├── is_active (bool)
+  ├── created_at (timestamptz)
+  └── updated_at (timestamptz)
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ CONFIGURATION & CONTENT (4 tables)                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  global_settings (Platform-wide)
+  ├── id (uuid, PK)
+  ├── default_tax_rate (numeric)
+  ├── default_shipping_cost (numeric)
+  ├── free_shipping_threshold (numeric)
+  ├── apply_tax_to_shipping (bool)
+  ├── created_at (timestamptz)
+  └── updated_at (timestamptz)
+
+  seller_settings (Per-seller overrides)
+  ├── id (uuid, PK)
+  ├── seller_id (uuid, FK to auth.users, unique)
+  ├── business_name (text)
+  ├── business_abn (text)
+  ├── default_tax_rate (numeric)
+  ├── default_shipping_cost (numeric)
+  ├── override_global_tax (bool)
+  ├── override_global_shipping (bool)
+  ├── tax_registration_number (text)
+  ├── gstin (text) -- India
+  ├── vat_id (text) -- Europe
+  ├── tax_inclusive_pricing (bool)
+  ├── created_at (timestamptz)
+  └── updated_at (timestamptz)
+
+  services (Professional services)
+  ├── id (uuid, PK)
+  ├── slug (text, unique)
+  ├── name (text)
+  ├── description (text)
+  ├── image (text)
+  ├── price (numeric)
+  ├── duration (text)
+  ├── category (text)
+  └── created_at (timestamptz)
+
+  diy_articles (DIY guides & tutorials)
+  ├── id (uuid, PK)
+  ├── slug (text, unique)
+  ├── title (text)
+  ├── excerpt (text)
+  ├── content (text)
+  ├── featured_image (text)
+  ├── author (text)
+  ├── published_at (timestamptz)
+  ├── category (text)
+  ├── tags (text[])
+  └── created_at (timestamptz)
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ SECURITY CONFIGURATION (Row Level Security)                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+PUBLIC ACCESS (no auth required):
+  ✓ departments (read)
+  ✓ categories (read)
+  ✓ products (read)
+  ✓ product_variants (read)
+  ✓ services (read)
+  ✓ diy_articles (read)
+  ✓ global_settings (read)
+  ✓ carriers (read active only)
+
+CUSTOMER ACCESS (authenticated):
+  ✓ user_profiles (own profile)
+  ✓ addresses (own addresses)
+  ✓ cart_items (own cart)
+  ✓ wishlist (own wishlist)
+  ✓ orders (own orders - read/create)
+  ✓ order_items (own order items - read/create)
+  ✓ order_tracking_events (own orders - read)
+
+SELLER ACCESS (authenticated + role='seller'):
+  ✓ All customer access
+  ✓ products (own products - full access)
+  ✓ product_variants (own product variants - full access)
+  ✓ seller_settings (own settings - full access)
+  ✓ orders (containing own products - read/update)
+  ✓ order_tracking_events (for own products - full access)
+  ✓ departments (manage)
+  ✓ categories (manage)
+
+ADMIN ACCESS (authenticated + role='admin'):
+  ✓ ALL tables - full access
+  ✓ User management
+  ✓ Global settings management
+  ✓ Carrier management
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ PERFORMANCE INDEXES                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  idx_categories_department     → categories(department_id)
+  idx_categories_slug           → categories(slug)
+  idx_products_slug             → products(slug)
+  idx_products_category         → products(category_id)
+  idx_products_department       → products(department_id)
+  idx_products_seller           → products(seller_id)
+  idx_product_variants_product  → product_variants(product_id)
+  idx_addresses_user            → addresses(user_id)
+  idx_cart_items_user           → cart_items(user_id)
+  idx_cart_items_product        → cart_items(product_id)
+  idx_wishlist_user             → wishlist(user_id)
+  idx_wishlist_product          → wishlist(product_id)
+  idx_orders_user               → orders(user_id)
+  idx_orders_number             → orders(order_number)
+  idx_order_items_order         → order_items(order_id)
+  idx_order_items_product       → order_items(product_id)
+  idx_order_tracking_events_order → order_tracking_events(order_id, created_at DESC)
+  idx_services_slug             → services(slug)
+  idx_diy_articles_slug         → diy_articles(slug)
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ SAMPLE DATA INCLUDED                                                     │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  Departments (3):
+    • Building & Hardware
+    • Tools & Equipment
+    • Garden & Outdoor
+
+  Categories (6):
+    • Fasteners & Fixings (245 products)
+    • Timber & Lumber (189 products)
+    • Power Tools (156 products)
+    • Hand Tools (298 products)
+    • Gardening (167 products)
+    • Outdoor Furniture (89 products)
+
+  Products (3):
+    • Premium Concrete Mix 50kg - $12.95 (was $15.95)
+    • 18V Cordless Drill with Battery - $149.99
+    • 30m Heavy Duty Garden Hose - $89.99 (was $109.99)
+
+  Carriers (7):
+    • FedEx, DHL, UPS, USPS, Amazon Logistics, Australia Post, Self Delivery
+
+  Services (2):
+    • Kitchen Installation Service - $299.00
+    • Garden Design Consultation - $150.00
+
+  DIY Articles (2):
+    • How to Build a Garden Deck
+    • Garage Storage Solutions
+
+  Global Settings (1):
+    • Tax Rate: 10%
+    • Shipping Cost: $9.95
+    • Free Shipping: $99.00
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  TOTAL: 16 Tables | 35+ Policies | 19+ Indexes | 24 Sample Records      ║
+╚══════════════════════════════════════════════════════════════════════════╝
